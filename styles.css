@@ -98,7 +98,15 @@ body {
     gap: 20px;
     overflow-y: auto;
     max-height: calc(100vh - 140px);
-    padding-right: 8px; /* Espacio para el scroll */
+    padding-right: 8px;
+}
+
+@media (max-width: 1024px) {
+    .left-panel {
+        overflow-y: visible;
+        max-height: none;
+        padding-right: 0;
+    }
 }
 
 .right-panel {
@@ -107,6 +115,32 @@ body {
     gap: 20px;
     overflow-y: auto;
     max-height: calc(100vh - 140px);
+}
+
+@media (max-width: 1024px) {
+    .right-panel {
+       
+        max-height: none;
+    }
+}
+
+/* Scrollbar personalizado para el panel izquierdo (solo desktop) */
+.left-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* KPI Cards Modernas */
@@ -207,24 +241,13 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     min-height: 300px;
 }
-/* Scrollbar personalizado para el panel izquierdo */
-.left-panel::-webkit-scrollbar {
-    width: 6px;
+
+@media (max-width: 1024px) {
+    .metricas-adicionales {
+        min-height: auto;
+    }
 }
 
-.left-panel::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.left-panel::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-.left-panel::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
 .metricas-adicionales h3 {
     font-size: clamp(15px, 3vw, 18px);
     color: var(--white);
@@ -539,9 +562,9 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .tabs-container {
-        min-height: 380px;
+        min-height: auto;
     }
 }
 
@@ -591,9 +614,10 @@ body {
     overflow-y: auto;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .tab-content {
-        max-height: 320px;
+        max-height: none;
+        overflow-y: visible;
         padding: 16px;
     }
 }
@@ -649,6 +673,7 @@ body {
     position: sticky;
     top: 0;
     font-size: clamp(12px, 1.8vw, 14px);
+    z-index: 10;
 }
 
 #tablaAmortizacion td,
@@ -722,24 +747,61 @@ body {
     display: block;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+/* Scrollbar Styling - Solo visible en desktop */
+@media (min-width: 1025px) {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+    }
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
+/* Ocultar scrollbars en mobile pero mantener funcionalidad de scroll horizontal en tablas */
+@media (max-width: 1024px) {
+    ::-webkit-scrollbar {
+        width: 0px;
+        height: 6px;
+    }
 
-::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 4px;
-}
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
+    ::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.3);
+        border-radius: 3px;
+    }
+    
+    /* Solo para tablas mantener scroll horizontal visible */
+    #tablaAmortizacion::-webkit-scrollbar,
+    #tablaResumenComparativo::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    #tablaAmortizacion::-webkit-scrollbar-track,
+    #tablaResumenComparativo::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    
+    #tablaAmortizacion::-webkit-scrollbar-thumb,
+    #tablaResumenComparativo::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 3px;
+    }
 }
 
 /* Estilos para el selector de sistema de amortización */
