@@ -938,7 +938,130 @@ function openTab(tabId) {
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
+function exportarAExcel() {
+    if (!datoPrincipal) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No hay datos',
+            text: 'Primero debes calcular un préstamo para exportar.'
+        });
+        return;
+    }
 
+    const sistema = document.getElementById("sistemaAmortizacion").value;
+    const sistemaLabel = sistema === 'aleman' ? 'Sistema Alemán' : 'Sistema Francés';
+    const tabla = datoPrincipal.data.Tabla;
+    
+    // Calcular totales
+    const totalPagar = tabla.reduce((sum, row) => sum + row.Cuota_total, 0);
+    const totalInteres = tabla.reduce((sum, row) => sum + row.Interes, 0);
+    const totalAmortizacion = tabla.reduce((sum, row) => sum + row.Amortizacion, 0);
+    
+    // Crear libro de trabajo
+    const wb = XLSX.utils.book_new();
+    
+    // Datos para la hoja principal
+    const datosHoja = [];
+    
+    // Título principal
+    datosHoja.push(['PANEL FINANCIERO - TABLA DE AMORTIZACIÓN'], ['']);
+    
+    // Información del préstamo
+    datosHoja.push(
+        ['INFORMACIÓN DEL PRÉSTAMO', '', '', '', ''],
+        ['Sistema de Amortización:', sistemaLabel, '', 'Fecha Exportación:', new Date().toLocaleDateString('es-AR')],
+        ['Banco:', datoPrincipal.banco, '', 'Hora:', new Date().toLocaleTimeString('es-AR')],
+        ['Monto del Préstamo:', formatearPesos(datoPrincipal.monto), '', 'Exportado por:', 'Panel Financiero'],
+        ['Cantidad de Cuotas:', datoPrincipal.cuotas, '', 'Versión:', '1.0'],
+        ['TNA Aplicada:', datoPrincipal.data.TNA + '%', '', '', ''],
+        ['', '', '', '', ''],
+        ['RESUMEN FINANCIERO', '', '', '', ''],
+        ['Total a Pagar:', formatearPesos(totalPagar), '', 'Total Interés:', formatearPesos(totalInteres)],
+        ['Total Amortización:', formatearPesos(totalAmortizacion), '', 'Costo Financiero:', formatearPesos(totalInteres)],
+        ['', '', '', '', ''],
+        ['', '', '', '', '']
+    );
+    
+    // Encabezados de la tabla
+    datosHoja.push([
+        'N° CUOTA',
+        'CUOTA TOTAL',
+        'INTERÉS',
+        'AMORTIZACIÓN',
+        'SALDO PENDIENTE'
+    ]);
+    
+    // Datos de la tabla
+    tabla.forEach(fila => {
+        datosHoja.push([
+            fila.Cuota,
+            fila.Cuota_total,
+            fila.Interes,
+            fila.Amortizacion,
+            fila.Saldo
+        ]);
+    });
+    
+    // Totales al final
+    datosHoja.push(
+        ['', '', '', '', ''],
+        ['TOTALES', totalPagar, totalInteres, totalAmortizacion, '-']
+    );
+    
+    // Crear hoja de trabajo
+    const ws = XLSX.utils.aoa_to_sheet(datosHoja);
+    
+    // Aplicar estilos y formato
+    if (!ws['!merges']) ws['!merges'] = [];
+    
+    // Fusionar celdas para títulos
+    ws['!merges'].push(
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }, // Título principal
+        { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } }, // Información del préstamo
+        { s: { r: 8, c: 0 }, e: { r: 8, c: 1 } }, // Resumen financiero
+        { s: { r: 12 + tabla.length, c: 0 }, e: { r: 12 + tabla.length, c: 0 } } // Totales
+    );
+    
+    // Definir anchos de columna
+    ws['!cols'] = [
+        { wch: 10 }, // Columna A: N° Cuota
+        { wch: 15 }, // Columna B: Cuota Total
+        { wch: 15 }, // Columna C: Interés
+        { wch: 15 }, // Columna D: Amortización
+        { wch: 18 }  // Columna E: Saldo Pendiente
+    ];
+    
+    // Agregar hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Tabla de Amortización');
+    
+    // Crear hoja de resumen
+    crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmortizacion);
+    
+    // Generar archivo
+    const fileName = `Amortizacion_${datoPrincipal.banco}_${sistemaLabel.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    
+    // Mostrar confirmación
+    Swal.fire({
+        icon: 'success',
+        title: 'Exportado exitosamente',
+        html: `
+            <div style="text-align: left; font-size: 14px;">
+                <p><strong>Archivo:</strong> ${fileName}</p>
+                <p><strong>Sistema:</strong> ${sistemaLabel}</p>
+                <p><strong>Banco:</strong> ${datoPrincipal.banco}</p>
+                <p><strong>Formato:</strong> Excel (.xlsx)</p>
+                <p style="margin-top: 10px; color: #666;">El archivo incluye formato profesional y múltiples hojas.</p>
+            </div>
+        `,
+        showCancelButton: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Esto abrirá la carpeta de descargas en algunos navegadores
+            window.open('file:///C:/Users/' + (window.userName || 'Usuario') + '/Downloads');
+        }
+    });
+}
 // Calcular automáticamente al cargar
 // window.addEventListener('load', () => {
 //     document.getElementById('monto').value = 150000;

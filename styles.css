@@ -919,6 +919,51 @@ body {
     margin-left: 10px;
 }
 
+.btn-excel {
+    position: relative;
+        background: linear-gradient(135deg, #217346 0%, #1e6e3e 100%);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(33, 115, 70, 0.3);
+}
+
+.btn-excel::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.btn-excel:hover {
+    background: linear-gradient(135deg, #1e6e3e 0%, #185c32 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(33, 115, 70, 0.4);
+}
+
+.btn-excel:active {
+    transform: translateY(0);
+}
+.btn-excel:hover::after {
+    opacity: 1;
+}
 .sistema-selector select {
     padding: 4px 8px;
     border: 1px solid #ddd;
