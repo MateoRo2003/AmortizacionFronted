@@ -782,7 +782,11 @@ function openTab(tabId) {
 }
 
 // Calcular automáticamente al cargar
-// window.addEventListener('load', () => {
-//     // Establecer valore
-//     calcularYActualizar();
-// });
+window.addEventListener('load', () => {
+    // Establecer valores por defecto
+    document.getElementById('monto').value = 150000;
+    document.getElementById('cuotas').value = 12;
+    
+    // Calcular automáticamente
+    calcularYActualizar();
+});
