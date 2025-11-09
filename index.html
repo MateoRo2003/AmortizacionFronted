@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Financiero - Préstamos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo"><i class="fa-solid fa-coins"></i></div>
+            <h1>Panel Financiero</h1>
+        </div>
+        <div style="color: #666; font-size: 14px;">Período 2025</div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Panel izquierdo: Configuración y KPIs -->
+        <div class="left-panel">
+            <div class="filters">
+                <h3 style="margin-bottom: 10px; color: #333;"><i class="fa-solid fa-sliders"></i> Configuración del Préstamo</h3>
+                <div class="filter-group">
+                    <div class="input-wrapper">
+                        <label>Monto:</label>
+                        <input type="number" min="1" id="monto" placeholder="Ej: 150000">
+                    </div>
+                    
+                    <div class="input-wrapper">
+                        <label>Cuotas:</label>
+                        <input type="number" min="1" id="cuotas" placeholder="Ej: 12">
+                    </div>
+                    
+                    <div class="input-wrapper">
+                        <label>Banco Principal:</label>
+                        <select id="banco">
+                            <option value="Santander">Santander</option>
+                            <option value="BNA">Banco Nación</option>
+                            <option value="Macro">Macro</option>
+                            <option value="BCRA">BCRA</option>
+                            <option value="NaranjaX">Naranja X</option>
+                            <option value="BBVA">BBVA</option>
+                            <option value="Galicia">Galicia</option>
+                            <option value="MercadoPago">Mercado Pago</option>
+                            <option value="Patagonia">Patagonia</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-calcular" onclick="calcularYActualizar()">Calcular</button>
+                </div>
+                
+                <div class="comparacion-section">
+                    <h4 style="margin: 15px 0 8px 0; color: #333;"><i class="fa-solid fa-scale-balanced"></i> Comparar con otro banco</h4>
+                    <div class="filter-group">
+                        <div class="input-wrapper">
+                            <label>Banco Comparación:</label>
+                            <select id="bancoComparacion">
+                                <option value="">Seleccionar banco...</option>
+                                <option value="Santander">Santander</option>
+                                <option value="BNA">Banco Nación</option>
+                                <option value="Macro">Macro</option>
+                                <option value="BCRA">BCRA</option>
+                                <option value="NaranjaX">Naranja X</option>
+                                <option value="BBVA">BBVA</option>
+                                <option value="Galicia">Galicia</option>
+                                <option value="MercadoPago">Mercado Pago</option>
+                                <option value="Patagonia">Patagonia</option>
+                            </select>
+                        </div>
+                        <button class="btn-comparar" onclick="compararBancos()">Comparar</button>
+                        <button class="btn-limpiar" onclick="limpiarComparacion()">Limpiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-container">
+                <div class="kpi-card pink">
+                    <div class="kpi-label">Monto Total a Pagar</div>
+                    <div class="kpi-value" id="totalPagar">$0</div>
+                    <div class="kpi-subtitle" id="totalPagarComp"></div>
+                    <div class="kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-label">Interés Total</div>
+                    <div class="kpi-value" id="interesTotal">$0</div>
+                    <div class="kpi-subtitle" id="interesTotalComp"></div>
+                    <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+                </div>
+                <div class="kpi-card orange">
+                    <div class="kpi-label">Cuota Mensual</div>
+                    <div class="kpi-value" id="cuotaMensual">$0</div>
+                    <div class="kpi-subtitle" id="cuotaMensualComp"></div>
+                    <div class="kpi-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                </div>
+                <div class="kpi-card blue">
+                    <div class="kpi-label">TNA Aplicada</div>
+                    <div class="kpi-value" id="tnaAplicada">0%</div>
+                    <div class="kpi-subtitle" id="tnaAplicadaComp"></div>
+                    <div class="kpi-icon"><i class="fa-solid fa-percent"></i></div>
+                </div>
+            </div>
+
+            <div class="metricas-adicionales">
+                <h3><i class="fa-solid fa-chart-simple"></i> Métricas Financieras Detalladas</h3>
+                <div class="metricas-grid">
+                    <div class="metrica-item">
+                        <div class="metrica-label">TEM (Tasa Efectiva Mensual)</div>
+                        <div class="metrica-value" id="tem">0%</div>
+                        <div class="metrica-comp" id="temComp"></div>
+                    </div>
+                    <div class="metrica-item">
+                        <div class="metrica-label">CFT (Costo Financiero Total)</div>
+                        <div class="metrica-value" id="cft">$0</div>
+                        <div class="metrica-comp" id="cftComp"></div>
+                    </div>
+                    <div class="metrica-item">
+                        <div class="metrica-label">CFTNA (CFT Nominal Anual)</div>
+                        <div class="metrica-value" id="cftna">0%</div>
+                        <div class="metrica-comp" id="cftnaComp"></div>
+                    </div>
+                    <div class="metrica-item">
+                        <div class="metrica-label">TEA (Tasa Efectiva Anual)</div>
+                        <div class="metrica-value" id="tea">0%</div>
+                        <div class="metrica-comp" id="teaComp"></div>
+                    </div>
+                    <!-- <div class="metrica-item">
+                        <div class="metrica-label">CFTEA (CFT Efectivo Anual)</div>
+                        <div class="metrica-value" id="cftea">0%</div>
+                        <div class="metrica-comp" id="cfteaComp"></div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Gráficos y detalles -->
+        <div class="right-panel">
+            <div class="chart-container">
+                <div class="chart-card">
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-line"></i></div> Evolución del Saldo</h3>
+                    <canvas id="chartSaldo"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><div class="chart-icon"><i class="fa-solid fa-circle-info"></i></div> Composición de Cuotas</h3>
+                    <canvas id="chartComposicion"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-card">
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-pie"></i></div> Distribución Interés vs Capital</h3>
+                    <canvas id="chartDistribucion"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-bar"></i></div> Cuotas Mensuales</h3>
+                    <canvas id="chartCuotas"></canvas>
+                </div>
+            </div>
+
+            <div id="comparacionSection" style="display: none;">
+                <div class="comparacion-banner">
+                    <h3><i class="fa-solid fa-scale-balanced"></i> Comparación entre Bancos</h3>
+                    <p style="margin-top: 8px; opacity: 0.9;">Análisis detallado de las diferencias entre ambos préstamos</p>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-card">
+                        <h3><div class="chart-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div> Comparación de Costos Totales</h3>
+                        <canvas id="chartComparacionTotal"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3><div class="chart-icon"><i class="fa-solid fa-calendar-check"></i></div> Comparación de Cuotas Mensuales</h3>
+                        <canvas id="chartComparacionCuotas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs para contenido adicional -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-button active" onclick="openTab('tab-amortizacion')">Tabla de Amortización</button>
+                    <button class="tab-button" onclick="openTab('tab-comparacion')">Comparación Detallada</button>
+                </div>
+                <div class="tab-content active" id="tab-amortizacion">
+                    <div id="tablaAmortizacion"></div>
+                </div>
+                <div class="tab-content" id="tab-comparacion">
+                    <div id="tablaResumenComparativo"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading"><i class="fa-solid fa-hourglass-half"></i> Calculando...</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
