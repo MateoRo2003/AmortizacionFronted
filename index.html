@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
 </head>
-
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
@@ -24,19 +23,18 @@
         <!-- Panel izquierdo: Configuración y KPIs -->
         <div class="left-panel">
             <div class="filters">
-                <h3 style="margin-bottom: 10px; color: #333;"><i class="fa-solid fa-sliders"></i> Configuración del
-                    Préstamo</h3>
+                <h3 style="margin-bottom: 10px; color: #333;"><i class="fa-solid fa-sliders"></i> Configuración del Préstamo</h3>
                 <div class="filter-group">
                     <div class="input-wrapper">
                         <label>Monto:</label>
                         <input type="number" min="1" id="monto" placeholder="Ej: 150000">
                     </div>
-
+                    
                     <div class="input-wrapper">
                         <label>Cuotas:</label>
                         <input type="number" min="1" id="cuotas" placeholder="Ej: 12">
                     </div>
-
+                    
                     <div class="input-wrapper">
                         <label>Banco Principal:</label>
                         <select id="banco">
@@ -51,13 +49,12 @@
                             <option value="Patagonia">Patagonia</option>
                         </select>
                     </div>
-
+                    
                     <button class="btn-calcular" onclick="calcularYActualizar()">Calcular</button>
                 </div>
-
+                
                 <div class="comparacion-section">
-                    <h4 style="margin: 15px 0 8px 0; color: #333;"><i class="fa-solid fa-scale-balanced"></i> Comparar
-                        con otro banco</h4>
+                    <h4 style="margin: 15px 0 8px 0; color: #333;"><i class="fa-solid fa-scale-balanced"></i> Comparar con otro banco</h4>
                     <div class="filter-group">
                         <div class="input-wrapper">
                             <label>Banco Comparación:</label>
@@ -143,31 +140,22 @@
         <div class="right-panel">
             <div class="chart-container">
                 <div class="chart-card">
-                    <h3>
-                        <div class="chart-icon"><i class="fa-solid fa-chart-line"></i></div> Evolución del Saldo
-                    </h3>
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-line"></i></div> Evolución del Saldo</h3>
                     <canvas id="chartSaldo"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3>
-                        <div class="chart-icon"><i class="fa-solid fa-circle-info"></i></div> Composición de Cuotas
-                    </h3>
+                    <h3><div class="chart-icon"><i class="fa-solid fa-circle-info"></i></div> Composición de Cuotas</h3>
                     <canvas id="chartComposicion"></canvas>
                 </div>
             </div>
 
             <div class="chart-container">
                 <div class="chart-card">
-                    <h3>
-                        <div class="chart-icon"><i class="fa-solid fa-chart-pie"></i></div> Distribución Interés vs
-                        Capital
-                    </h3>
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-pie"></i></div> Distribución Interés vs Capital</h3>
                     <canvas id="chartDistribucion"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3>
-                        <div class="chart-icon"><i class="fa-solid fa-chart-bar"></i></div> Cuotas Mensuales
-                    </h3>
+                    <h3><div class="chart-icon"><i class="fa-solid fa-chart-bar"></i></div> Cuotas Mensuales</h3>
                     <canvas id="chartCuotas"></canvas>
                 </div>
             </div>
@@ -175,41 +163,25 @@
             <div id="comparacionSection" style="display: none;">
                 <div class="comparacion-banner">
                     <h3><i class="fa-solid fa-scale-balanced"></i> Comparación entre Bancos</h3>
-                    <p style="margin-top: 8px; opacity: 0.9;">Análisis detallado de las diferencias entre ambos
-                        préstamos</p>
+                    <p style="margin-top: 8px; opacity: 0.9;">Análisis detallado de las diferencias entre ambos préstamos</p>
                 </div>
-
+                
                 <div class="chart-container">
                     <div class="chart-card">
-                        <h3>
-                            <div class="chart-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div> Comparación de
-                            Costos Totales
-                        </h3>
+                        <h3><div class="chart-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div> Comparación de Costos Totales</h3>
                         <canvas id="chartComparacionTotal"></canvas>
                     </div>
                     <div class="chart-card">
-                        <h3>
-                            <div class="chart-icon"><i class="fa-solid fa-calendar-check"></i></div> Comparación de
-                            Cuotas Mensuales
-                        </h3>
+                        <h3><div class="chart-icon"><i class="fa-solid fa-calendar-check"></i></div> Comparación de Cuotas Mensuales</h3>
                         <canvas id="chartComparacionCuotas"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- Tabs para contenido adicional -->
-            <!-- Tabs para contenido adicional -->
             <div class="tabs-container">
                 <div class="tabs-header">
-                    <button class="tab-button active" onclick="openTab('tab-amortizacion')">
-                        Tabla de Amortización
-                        <div class="sistema-selector">
-                            <select id="sistemaAmortizacion" onchange="cambiarSistemaAmortizacion()">
-                                <option value="frances">Sistema Francés</option>
-                                <option value="aleman">Sistema Alemán</option>
-                            </select>
-                        </div>
-                    </button>
+                    <button class="tab-button active" onclick="openTab('tab-amortizacion')">Tabla de Amortización (Frances)</button>
                     <button class="tab-button" onclick="openTab('tab-comparacion')">Comparación Detallada</button>
                 </div>
                 <div class="tab-content active" id="tab-amortizacion">
@@ -226,5 +198,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
