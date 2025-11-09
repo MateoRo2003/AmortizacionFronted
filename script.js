@@ -1,6 +1,7 @@
 let charts = {};
 let datoPrincipal = null;
 let datoComparacion = null;
+let sistemaAmortizacion = 'frances'; // Valor por defecto
 
 function formatearPesos(valor) {
     return new Intl.NumberFormat('es-AR', {
@@ -8,6 +9,95 @@ function formatearPesos(valor) {
         currency: 'ARS',
         minimumFractionDigits: 0
     }).format(valor);
+}
+
+// Función para cambiar el sistema de amortización
+function cambiarSistemaAmortizacion() {
+    const selector = document.getElementById('sistemaAmortizacion');
+    sistemaAmortizacion = selector.value;
+    
+    // Recalcular si ya hay datos
+    if (datoPrincipal) {
+        recalcularConSistemaActual();
+    }
+}
+
+// Función para recalcular con el sistema seleccionado
+function recalcularConSistemaActual() {
+    if (!datoPrincipal) return;
+    
+    const monto = datoPrincipal.monto;
+    const cuotas = datoPrincipal.cuotas;
+    const tna = datoPrincipal.data.TNA;
+    
+    // Generar tabla según el sistema seleccionado
+    const nuevaTabla = sistemaAmortizacion === 'frances' 
+        ? generarTablaFrances(monto, cuotas, tna)
+        : generarTablaAleman(monto, cuotas, tna);
+    
+    // Actualizar datos principales
+    datoPrincipal.data.Tabla = nuevaTabla;
+    
+    // Actualizar dashboard
+    actualizarDashboard(datoPrincipal.data, datoPrincipal.banco);
+    
+    // Si hay comparación, actualizar también la tabla del banco de comparación
+    if (datoComparacion) {
+        const nuevaTablaComparacion = sistemaAmortizacion === 'frances'
+            ? generarTablaFrances(monto, cuotas, datoComparacion.data.TNA)
+            : generarTablaAleman(monto, cuotas, datoComparacion.data.TNA);
+        
+        datoComparacion.data.Tabla = nuevaTablaComparacion;
+        mostrarComparacion();
+    }
+}
+
+// Función para generar tabla francesa
+function generarTablaFrances(monto, n_cuotas, tna) {
+    const i = (tna / 100) / 12;
+    const cuotaFija = monto * i / (1 - (1 + i) ** -n_cuotas);
+
+    const tabla = [];
+    let saldoActual = monto;
+    
+    for (let n = 1; n <= n_cuotas; n++) {
+        const interes = saldoActual * i;
+        const amortizacion = cuotaFija - interes;
+        saldoActual -= amortizacion;
+        
+        tabla.push({
+            "Cuota": n,
+            "Cuota_total": Math.round(cuotaFija * 100) / 100,
+            "Interes": Math.round(interes * 100) / 100,
+            "Amortizacion": Math.round(amortizacion * 100) / 100,
+            "Saldo": Math.round(Math.max(saldoActual, 0) * 100) / 100
+        });
+    }
+    return tabla;
+}
+
+// Función para generar tabla alemana
+function generarTablaAleman(monto, n_cuotas, tna) {
+    const i = (tna / 100) / 12;
+    const amortizacionConstante = monto / n_cuotas;
+
+    const tabla = [];
+    let saldoActual = monto;
+    
+    for (let n = 1; n <= n_cuotas; n++) {
+        const interes = saldoActual * i;
+        const cuotaTotal = amortizacionConstante + interes;
+        saldoActual -= amortizacionConstante;
+        
+        tabla.push({
+            "Cuota": n,
+            "Cuota_total": Math.round(cuotaTotal * 100) / 100,
+            "Interes": Math.round(interes * 100) / 100,
+            "Amortizacion": Math.round(amortizacionConstante * 100) / 100,
+            "Saldo": Math.round(Math.max(saldoActual, 0) * 100) / 100
+        });
+    }
+    return tabla;
 }
 
 // Cálculo de métricas financieras - SOLO cuando no vienen del backend
@@ -80,6 +170,13 @@ async function calcularYActualizar() {
             cuotas: Number(cuotas)
         };
 
+        // Regenerar tabla según el sistema seleccionado
+        const nuevaTabla = sistemaAmortizacion === 'frances'
+            ? generarTablaFrances(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA)
+            : generarTablaAleman(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA);
+        
+        datoPrincipal.data.Tabla = nuevaTabla;
+
         actualizarDashboard(data, banco);
 
         // Si hay comparación activa, actualizarla
@@ -147,6 +244,13 @@ async function compararBancos() {
             banco: bancoComp,
             data: data
         };
+
+        // Regenerar tabla del banco de comparación según el sistema seleccionado
+        const nuevaTablaComparacion = sistemaAmortizacion === 'frances'
+            ? generarTablaFrances(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA)
+            : generarTablaAleman(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA);
+        
+        datoComparacion.data.Tabla = nuevaTablaComparacion;
 
         mostrarComparacion();
     } catch (error) {
@@ -220,8 +324,21 @@ function actualizarDashboard(data, banco) {
 function mostrarComparacion() {
     if (!datoPrincipal || !datoComparacion) return;
 
-    const tabla1 = datoPrincipal.data.Tabla;
-    const tabla2 = datoComparacion.data.Tabla;
+    const monto = datoPrincipal.monto;
+    const cuotas = datoPrincipal.cuotas;
+    
+    // Regenerar tablas según el sistema seleccionado para AMBOS bancos
+    const tabla1 = sistemaAmortizacion === 'frances'
+        ? generarTablaFrances(monto, cuotas, datoPrincipal.data.TNA)
+        : generarTablaAleman(monto, cuotas, datoPrincipal.data.TNA);
+        
+    const tabla2 = sistemaAmortizacion === 'frances'
+        ? generarTablaFrances(monto, cuotas, datoComparacion.data.TNA)
+        : generarTablaAleman(monto, cuotas, datoComparacion.data.TNA);
+
+    // Actualizar las tablas en los datos
+    datoPrincipal.data.Tabla = tabla1;
+    datoComparacion.data.Tabla = tabla2;
 
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
@@ -231,9 +348,6 @@ function mostrarComparacion() {
 
     const cuota1 = tabla1[0].Cuota_total;
     const cuota2 = tabla2[0].Cuota_total;
-
-    const monto = datoPrincipal.monto;
-    const cuotas = datoPrincipal.cuotas;
 
     // Calcular métricas para comparación con datos del backend
     const datosBackend1 = {
@@ -298,10 +412,10 @@ function mostrarComparacion() {
     document.getElementById("comparacionSection").style.display = "block";
 
     // Actualizar gráficos de comparación
-    actualizarGraficosComparacion();
+    actualizarGraficosComparacion(tabla1, tabla2);
 
     // Actualizar tabla resumen
-    actualizarTablaResumen();
+    actualizarTablaResumen(tabla1, tabla2);
 }
 
 function validarCampos() {
@@ -499,14 +613,9 @@ function actualizarGraficos(tabla) {
     });
 }
 
-function actualizarGraficosComparacion() {
-    const tabla1 = datoPrincipal.data.Tabla;
-    const tabla2 = datoComparacion.data.Tabla;
-
+function actualizarGraficosComparacion(tabla1, tabla2) {
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
-    const interes1 = tabla1.reduce((sum, row) => sum + row.Interes, 0);
-    const interes2 = tabla2.reduce((sum, row) => sum + row.Interes, 0);
 
     // Gráfico de costos totales
     const ctxTotal = document.getElementById('chartComparacionTotal').getContext('2d');
@@ -573,10 +682,7 @@ function actualizarGraficosComparacion() {
     });
 }
 
-function actualizarTablaResumen() {
-    const tabla1 = datoPrincipal.data.Tabla;
-    const tabla2 = datoComparacion.data.Tabla;
-
+function actualizarTablaResumen(tabla1, tabla2) {
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
     const interes1 = tabla1.reduce((sum, row) => sum + row.Interes, 0);
@@ -615,6 +721,12 @@ function actualizarTablaResumen() {
                 </tr>
             </thead>
             <tbody>
+                <tr>
+                    <td><strong>Sistema de Amortización</strong></td>
+                    <td>${sistemaAmortizacion === 'frances' ? 'Francés' : 'Alemán'}</td>
+                    <td>${sistemaAmortizacion === 'frances' ? 'Francés' : 'Alemán'}</td>
+                    <td>-</td>
+                </tr>
                 <tr>
                     <td><strong>Monto Solicitado</strong></td>
                     <td>${formatearPesos(monto)}</td>
