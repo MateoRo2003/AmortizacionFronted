@@ -59,7 +59,7 @@ async function calcularYActualizar() {
     };
 
     try {
-        const res = await fetch("https://amortizacion-fronted.vercel.app/api/calcular", {
+        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -128,7 +128,7 @@ async function compararBancos() {
     };
 
     try {
-        const res = await fetch("https://amortizacion-fronted.vercel.app/api/calcular", {
+        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
