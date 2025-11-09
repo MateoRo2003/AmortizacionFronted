@@ -1,7 +1,6 @@
 let charts = {};
 let datoPrincipal = null;
 let datoComparacion = null;
-let sistemaAmortizacion = 'frances'; // Valor por defecto
 
 function formatearPesos(valor) {
     return new Intl.NumberFormat('es-AR', {
@@ -11,123 +10,33 @@ function formatearPesos(valor) {
     }).format(valor);
 }
 
-// Función para cambiar el sistema de amortización
-function cambiarSistemaAmortizacion() {
-    const selector = document.getElementById('sistemaAmortizacion');
-    sistemaAmortizacion = selector.value;
-    
-    // Recalcular si ya hay datos
-    if (datoPrincipal) {
-        recalcularConSistemaActual();
-    }
-}
-
-// Función para recalcular con el sistema seleccionado
-function recalcularConSistemaActual() {
-    if (!datoPrincipal) return;
-    
-    const monto = datoPrincipal.monto;
-    const cuotas = datoPrincipal.cuotas;
-    const tna = datoPrincipal.data.TNA;
-    
-    // Generar tabla según el sistema seleccionado
-    const nuevaTabla = sistemaAmortizacion === 'frances' 
-        ? generarTablaFrances(monto, cuotas, tna)
-        : generarTablaAleman(monto, cuotas, tna);
-    
-    // Actualizar datos principales
-    datoPrincipal.data.Tabla = nuevaTabla;
-    
-    // Actualizar dashboard
-    actualizarDashboard(datoPrincipal.data, datoPrincipal.banco);
-    
-    // Si hay comparación, actualizar también la tabla del banco de comparación
-    if (datoComparacion) {
-        const nuevaTablaComparacion = sistemaAmortizacion === 'frances'
-            ? generarTablaFrances(monto, cuotas, datoComparacion.data.TNA)
-            : generarTablaAleman(monto, cuotas, datoComparacion.data.TNA);
-        
-        datoComparacion.data.Tabla = nuevaTablaComparacion;
-        mostrarComparacion();
-    }
-}
-
-// Función para generar tabla francesa
-function generarTablaFrances(monto, n_cuotas, tna) {
-    const i = (tna / 100) / 12;
-    const cuotaFija = monto * i / (1 - (1 + i) ** -n_cuotas);
-
-    const tabla = [];
-    let saldoActual = monto;
-    
-    for (let n = 1; n <= n_cuotas; n++) {
-        const interes = saldoActual * i;
-        const amortizacion = cuotaFija - interes;
-        saldoActual -= amortizacion;
-        
-        tabla.push({
-            "Cuota": n,
-            "Cuota_total": Math.round(cuotaFija * 100) / 100,
-            "Interes": Math.round(interes * 100) / 100,
-            "Amortizacion": Math.round(amortizacion * 100) / 100,
-            "Saldo": Math.round(Math.max(saldoActual, 0) * 100) / 100
-        });
-    }
-    return tabla;
-}
-
-// Función para generar tabla alemana
-function generarTablaAleman(monto, n_cuotas, tna) {
-    const i = (tna / 100) / 12;
-    const amortizacionConstante = monto / n_cuotas;
-
-    const tabla = [];
-    let saldoActual = monto;
-    
-    for (let n = 1; n <= n_cuotas; n++) {
-        const interes = saldoActual * i;
-        const cuotaTotal = amortizacionConstante + interes;
-        saldoActual -= amortizacionConstante;
-        
-        tabla.push({
-            "Cuota": n,
-            "Cuota_total": Math.round(cuotaTotal * 100) / 100,
-            "Interes": Math.round(interes * 100) / 100,
-            "Amortizacion": Math.round(amortizacionConstante * 100) / 100,
-            "Saldo": Math.round(Math.max(saldoActual, 0) * 100) / 100
-        });
-    }
-    return tabla;
-}
-
-// Cálculo de métricas financieras - SOLO cuando no vienen del backend
+// CORREGIDO: Cálculo de métricas financieras 
 function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
-    // TEM - Tasa Efectiva Mensual (siempre calcular, no viene del backend)
-    const tem = ((1 + tna / 100) ** (1 / 12) - 1) * 100;
+    // CORRECCIÓN: TEM correcta para préstamos (TNA / 12)
+    const tem = tna / 12;
 
-    // TEA - Tasa Efectiva Anual
-    // Usar del backend si existe, sino calcular
+    // TEA - Usar del backend si existe, sino calcular correctamente
     const tea = datosBackend.TEA !== null && datosBackend.TEA !== undefined
         ? datosBackend.TEA
-        : ((1 + tem / 100) ** 12 - 1) * 100;
+        : ((1 + tna / 100 / 12) ** 12 - 1) * 100;
 
-    // CFT - Costo Financiero Total (total de intereses)
+    // CFT - Costo Financiero Total (total de intereses) - CORRECTO
     const cft = totalPagar - monto;
 
-    // CFTNA - CFT Nominal Anual (como porcentaje)
+    // CFTNA - CFT Nominal Anual (aproximación)
     const cftna = (cft / monto) * (12 / cuotas) * 100;
 
-    // CFTEA - Usar del backend si existe, sino calcular basado en CFTNA
+    // CFTEA - Usar del backend si existe
     const cftea = datosBackend.CFTEA !== null && datosBackend.CFTEA !== undefined
         ? datosBackend.CFTEA
-        : ((1 + cftna / 100) ** 1 - 1) * 100; // Aproximación simple
+        : null;
 
     return {
         tem: tem.toFixed(2),
         tea: tea.toFixed(2),
         cft: cft.toFixed(2),
         cftna: cftna.toFixed(2),
-        cftea: cftea.toFixed(2),
+        cftea: cftea ? cftea.toFixed(2) : 'N/A',
         teaCalculada: datosBackend.TEA === null || datosBackend.TEA === undefined,
         cfteaCalculada: datosBackend.CFTEA === null || datosBackend.CFTEA === undefined
     };
@@ -135,7 +44,7 @@ function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
 
 async function calcularYActualizar() {
     if (!validarCampos()) {
-        return; // detiene todo
+        return;
     }
     const monto = document.getElementById("monto").value;
     const cuotas = document.getElementById("cuotas").value;
@@ -150,7 +59,7 @@ async function calcularYActualizar() {
     };
 
     try {
-        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+        const res = await fetch("https://amortizacion-fronted.vercel.app/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -159,7 +68,7 @@ async function calcularYActualizar() {
         const data = await res.json();
         console.log("Respuesta del backend:", data);
         if (data.error) {
-            alert(data.error);
+            Swal.fire("Error", data.error, "error");
             return;
         }
 
@@ -170,21 +79,13 @@ async function calcularYActualizar() {
             cuotas: Number(cuotas)
         };
 
-        // Regenerar tabla según el sistema seleccionado
-        const nuevaTabla = sistemaAmortizacion === 'frances'
-            ? generarTablaFrances(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA)
-            : generarTablaAleman(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA);
-        
-        datoPrincipal.data.Tabla = nuevaTabla;
-
         actualizarDashboard(data, banco);
 
-        // Si hay comparación activa, actualizarla
         if (datoComparacion) {
             mostrarComparacion();
         }
     } catch (error) {
-        alert("Error al calcular: " + error.message);
+        Swal.fire("Error", "Error al calcular: " + error.message, "error");
     } finally {
         document.getElementById("loading").classList.remove("active");
     }
@@ -227,7 +128,7 @@ async function compararBancos() {
     };
 
     try {
-        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+        const res = await fetch("https://amortizacion-fronted.vercel.app/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -236,7 +137,7 @@ async function compararBancos() {
         const data = await res.json();
 
         if (data.error) {
-            alert(data.error);
+            Swal.fire("Error", data.error, "error");
             return;
         }
 
@@ -245,16 +146,9 @@ async function compararBancos() {
             data: data
         };
 
-        // Regenerar tabla del banco de comparación según el sistema seleccionado
-        const nuevaTablaComparacion = sistemaAmortizacion === 'frances'
-            ? generarTablaFrances(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA)
-            : generarTablaAleman(datoPrincipal.monto, datoPrincipal.cuotas, data.TNA);
-        
-        datoComparacion.data.Tabla = nuevaTablaComparacion;
-
         mostrarComparacion();
     } catch (error) {
-        alert("Error al comparar: " + error.message);
+        Swal.fire("Error", "Error al comparar: " + error.message, "error");
     } finally {
         document.getElementById("loading").classList.remove("active");
     }
@@ -265,7 +159,6 @@ function limpiarComparacion() {
     document.getElementById("bancoComparacion").value = "";
     document.getElementById("comparacionSection").style.display = "none";
 
-    // Limpiar subtítulos de comparación
     document.querySelectorAll('.kpi-subtitle').forEach(el => el.textContent = '');
     document.querySelectorAll('.metrica-comp').forEach(el => el.textContent = '');
 }
@@ -284,8 +177,7 @@ function actualizarDashboard(data, banco) {
     document.getElementById("cuotaMensual").textContent = formatearPesos(cuotaMensual);
     document.getElementById("tnaAplicada").textContent = data.TNA + "%";
 
-    // Calcular y actualizar métricas financieras
-    // Pasar datos del backend (TEA, CFTEA) si existen
+    // Calcular métricas con datos del backend
     const datosBackend = {
         TEA: data.TEA || null,
         CFTEA: data.CFTEA || null
@@ -293,63 +185,42 @@ function actualizarDashboard(data, banco) {
 
     const metricas = calcularMetricas(data.TNA, monto, cuotas, totalPagar, datosBackend);
 
-    // Mostrar TEM (siempre calculada)
+    // Actualizar métricas
     document.getElementById("tem").textContent = metricas.tem + "%";
-
-    // Mostrar TEA con indicador si fue calculada
     document.getElementById("tea").innerHTML = metricas.tea + "%" +
         (metricas.teaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '');
-
-    // Mostrar CFT (siempre calculado)
     document.getElementById("cft").textContent = formatearPesos(metricas.cft);
-
-    // Mostrar CFTNA (siempre calculado)
     document.getElementById("cftna").textContent = metricas.cftna + "%";
 
-    // Actualizar sección de CFTEA (nueva métrica)
-    // Si existe el elemento, actualizarlo
     const cfteaElement = document.getElementById("cftea");
     if (cfteaElement) {
-        cfteaElement.innerHTML = metricas.cftea + "%" +
-            (metricas.cfteaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '');
+        cfteaElement.innerHTML = metricas.cftea !== 'N/A' 
+            ? metricas.cftea + "%" + (metricas.cfteaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '')
+            : 'N/A';
     }
 
-    // Actualizar gráficos
     actualizarGraficos(tabla);
-
-    // Actualizar tabla
     actualizarTabla(tabla);
 }
 
+// CORREGIDO: Mostrar comparación con lógica correcta
 function mostrarComparacion() {
     if (!datoPrincipal || !datoComparacion) return;
 
-    const monto = datoPrincipal.monto;
-    const cuotas = datoPrincipal.cuotas;
-    
-    // Regenerar tablas según el sistema seleccionado para AMBOS bancos
-    const tabla1 = sistemaAmortizacion === 'frances'
-        ? generarTablaFrances(monto, cuotas, datoPrincipal.data.TNA)
-        : generarTablaAleman(monto, cuotas, datoPrincipal.data.TNA);
-        
-    const tabla2 = sistemaAmortizacion === 'frances'
-        ? generarTablaFrances(monto, cuotas, datoComparacion.data.TNA)
-        : generarTablaAleman(monto, cuotas, datoComparacion.data.TNA);
-
-    // Actualizar las tablas en los datos
-    datoPrincipal.data.Tabla = tabla1;
-    datoComparacion.data.Tabla = tabla2;
+    const tabla1 = datoPrincipal.data.Tabla;
+    const tabla2 = datoComparacion.data.Tabla;
 
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
-
     const interes1 = tabla1.reduce((sum, row) => sum + row.Interes, 0);
     const interes2 = tabla2.reduce((sum, row) => sum + row.Interes, 0);
-
     const cuota1 = tabla1[0].Cuota_total;
     const cuota2 = tabla2[0].Cuota_total;
 
-    // Calcular métricas para comparación con datos del backend
+    const monto = datoPrincipal.monto;
+    const cuotas = datoPrincipal.cuotas;
+
+    // Calcular métricas
     const datosBackend1 = {
         TEA: datoPrincipal.data.TEA || null,
         CFTEA: datoPrincipal.data.CFTEA || null
@@ -362,12 +233,14 @@ function mostrarComparacion() {
     const metricas1 = calcularMetricas(datoPrincipal.data.TNA, monto, cuotas, total1, datosBackend1);
     const metricas2 = calcularMetricas(datoComparacion.data.TNA, monto, cuotas, total2, datosBackend2);
 
-    // Actualizar subtítulos KPI con comparación
+    // CORRECCIÓN: Calcular diferencias (valores POSITIVOS indican que el banco de comparación es PEOR)
     const difTotal = total2 - total1;
     const difInteres = interes2 - interes1;
     const difCuota = cuota2 - cuota1;
     const difTNA = datoComparacion.data.TNA - datoPrincipal.data.TNA;
 
+    // CORRECCIÓN: Mostrar comparaciones con lógica correcta
+    // Si difTotal > 0, el banco comparación es MÁS CARO (rojo)
     document.getElementById("totalPagarComp").innerHTML =
         `${datoComparacion.banco}: ${formatearPesos(total2)} <span class="${difTotal > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difTotal > 0 ? '+' : ''}${formatearPesos(difTotal)})</span>`;
 
@@ -399,23 +272,17 @@ function mostrarComparacion() {
     document.getElementById("cftnaComp").innerHTML =
         `${datoComparacion.banco}: ${metricas2.cftna}% <span class="${difCFTNA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCFTNA > 0 ? '+' : ''}${difCFTNA.toFixed(2)}%)</span>`;
 
-    // Actualizar CFTEA si existe el elemento
     const cfteaCompElement = document.getElementById("cfteaComp");
-    if (cfteaCompElement) {
+    if (cfteaCompElement && metricas2.cftea !== 'N/A') {
         const difCFTEA = parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea);
         const indicadorCFTEA2 = metricas2.cfteaCalculada ? ' <span style="font-size: 10px;">*</span>' : '';
         cfteaCompElement.innerHTML =
             `${datoComparacion.banco}: ${metricas2.cftea}%${indicadorCFTEA2} <span class="${difCFTEA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCFTEA > 0 ? '+' : ''}${difCFTEA.toFixed(2)}%)</span>`;
     }
 
-    // Mostrar sección de comparación
     document.getElementById("comparacionSection").style.display = "block";
-
-    // Actualizar gráficos de comparación
-    actualizarGraficosComparacion(tabla1, tabla2);
-
-    // Actualizar tabla resumen
-    actualizarTablaResumen(tabla1, tabla2);
+    actualizarGraficosComparacion();
+    actualizarTablaResumen();
 }
 
 function validarCampos() {
@@ -445,6 +312,15 @@ function validarCampos() {
         return false;
     }
 
+    if (monto > 10000000) {
+        Swal.fire({
+            icon: "warning",
+            title: "Monto muy alto",
+            text: "El monto no puede superar los $10.000.000"
+        });
+        return false;
+    }
+
     // Validar cuotas
     if (cuotasRaw === "" || Number.isNaN(cuotas)) {
         Swal.fire({
@@ -464,11 +340,20 @@ function validarCampos() {
         return false;
     }
 
-    if (cuotas > 70) {
+    if (cuotas > 84) {
         Swal.fire({
             icon: "warning",
             title: "Demasiadas cuotas",
-            text: "Ingresá un valor menor o igual a 70 cuotas."
+            text: "Ingresá un valor menor o igual a 84 cuotas (7 años)."
+        });
+        return false;
+    }
+
+    if (cuotas < 3) {
+        Swal.fire({
+            icon: "warning",
+            title: "Muy pocas cuotas",
+            text: "El mínimo de cuotas es 3."
         });
         return false;
     }
@@ -552,14 +437,14 @@ function actualizarGraficos(tabla) {
     charts.distribucion = new Chart(ctxDist, {
         type: 'bar',
         data: {
-            labels: tabla.map(r => `${r.Cuota}`),
+            labels: tabla.slice(0, 12).map(r => `${r.Cuota}`), // Mostrar solo primeras 12 cuotas para mejor visualización
             datasets: [{
                 label: 'Interés',
-                data: tabla.map(r => r.Interes),
+                data: tabla.slice(0, 12).map(r => r.Interes),
                 backgroundColor: '#f5576c'
             }, {
                 label: 'Capital',
-                data: tabla.map(r => r.Amortizacion),
+                data: tabla.slice(0, 12).map(r => r.Amortizacion),
                 backgroundColor: '#667eea'
             }]
         },
@@ -580,16 +465,16 @@ function actualizarGraficos(tabla) {
         }
     });
 
-    // Gráfico de cuotas mensuales
+    // Gráfico de cuotas mensuales (primeras 12 cuotas)
     const ctxCuotas = document.getElementById('chartCuotas').getContext('2d');
     if (charts.cuotas) charts.cuotas.destroy();
     charts.cuotas = new Chart(ctxCuotas, {
         type: 'bar',
         data: {
-            labels: tabla.map(r => `Cuota ${r.Cuota}`),
+            labels: tabla.slice(0, 12).map(r => `Cuota ${r.Cuota}`),
             datasets: [{
                 label: 'Cuota Total',
-                data: tabla.map(r => r.Cuota_total),
+                data: tabla.slice(0, 12).map(r => r.Cuota_total),
                 backgroundColor: '#30cfd0'
             }]
         },
@@ -613,7 +498,10 @@ function actualizarGraficos(tabla) {
     });
 }
 
-function actualizarGraficosComparacion(tabla1, tabla2) {
+function actualizarGraficosComparacion() {
+    const tabla1 = datoPrincipal.data.Tabla;
+    const tabla2 = datoComparacion.data.Tabla;
+
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
 
@@ -682,7 +570,11 @@ function actualizarGraficosComparacion(tabla1, tabla2) {
     });
 }
 
-function actualizarTablaResumen(tabla1, tabla2) {
+// CORREGIDO: Actualizar tabla resumen con análisis correcto
+function actualizarTablaResumen() {
+    const tabla1 = datoPrincipal.data.Tabla;
+    const tabla2 = datoComparacion.data.Tabla;
+
     const total1 = tabla1.reduce((sum, row) => sum + row.Cuota_total, 0);
     const total2 = tabla2.reduce((sum, row) => sum + row.Cuota_total, 0);
     const interes1 = tabla1.reduce((sum, row) => sum + row.Interes, 0);
@@ -721,12 +613,6 @@ function actualizarTablaResumen(tabla1, tabla2) {
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><strong>Sistema de Amortización</strong></td>
-                    <td>${sistemaAmortizacion === 'frances' ? 'Francés' : 'Alemán'}</td>
-                    <td>${sistemaAmortizacion === 'frances' ? 'Francés' : 'Alemán'}</td>
-                    <td>-</td>
-                </tr>
                 <tr>
                     <td><strong>Monto Solicitado</strong></td>
                     <td>${formatearPesos(monto)}</td>
@@ -805,10 +691,10 @@ function actualizarTablaResumen(tabla1, tabla2) {
                 </tr>
                 <tr>
                     <td><strong>CFTEA</strong></td>
-                    <td>${metricas1.cftea}%${indicadorCFTEA1}</td>
-                    <td>${metricas2.cftea}%${indicadorCFTEA2}</td>
-                    <td class="${(parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea)) > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">
-                        ${(parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea)).toFixed(2)}%
+                    <td>${metricas1.cftea !== 'N/A' ? metricas1.cftea + '%' + indicadorCFTEA1 : 'N/A'}</td>
+                    <td>${metricas2.cftea !== 'N/A' ? metricas2.cftea + '%' + indicadorCFTEA2 : 'N/A'}</td>
+                    <td class="${metricas1.cftea !== 'N/A' && metricas2.cftea !== 'N/A' ? ((parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea)) > 0 ? 'diferencia-negativa' : 'diferencia-positiva') : ''}">
+                        ${metricas1.cftea !== 'N/A' && metricas2.cftea !== 'N/A' ? (parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea)).toFixed(2) + '%' : '-'}
                     </td>
                 </tr>
             </tbody>
@@ -818,20 +704,36 @@ function actualizarTablaResumen(tabla1, tabla2) {
         </div>
     `;
 
-    // Agregar análisis de ahorro
-    const ahorro = total1 - total2;
-    if (ahorro !== 0) {
+    // CORRECCIÓN: Comparamos total1 vs total2
+    // Si total1 < total2 → banco1 (datoPrincipal) es MEJOR
+    // Si total1 > total2 → banco2 (datoComparacion) es MEJOR
+    const ahorro = Math.abs(total1 - total2);
+    
+    if (total1 !== total2) {
+        const esMejorBanco1 = total1 < total2;
+        const mejorBanco = esMejorBanco1 ? datoPrincipal.banco : datoComparacion.banco;
+        const peorBanco = esMejorBanco1 ? datoComparacion.banco : datoPrincipal.banco;
+        const mejorTNA = esMejorBanco1 ? datoPrincipal.data.TNA : datoComparacion.data.TNA;
+        const peorTNA = esMejorBanco1 ? datoComparacion.data.TNA : datoPrincipal.data.TNA;
+        
         html += `
-            <div style="margin-top: 20px; padding: 15px; background: ${ahorro > 0 ? '#dcfce7' : '#fee2e2'}; border-radius: 8px;">
-                <h4 style="margin-bottom: 10px; color: ${ahorro > 0 ? '#16a34a' : '#dc2626'};">
-                    ${ahorro > 0 ? 'Mejor Opción' : 'Opción más Costosa'}
+            <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <h4 style="margin-bottom: 10px; color: #16a34a;">
+                    💰 Mejor Opción: ${mejorBanco}
                 </h4>
-                <p style="color: #333;">
-                    ${ahorro > 0
-                ? `Eligiendo <strong>${datoPrincipal.banco}</strong> ahorrarías <strong>${formatearPesos(Math.abs(ahorro))}</strong> en comparación con ${datoComparacion.banco}.`
-                : `Eligiendo <strong>${datoComparacion.banco}</strong> ahorrarías <strong>${formatearPesos(Math.abs(ahorro))}</strong> en comparación con ${datoPrincipal.banco}.`
-            }
+                <p style="color: #333; margin-bottom: 8px;">
+                    Eligiendo <strong>${mejorBanco}</strong> ahorrarías <strong>${formatearPesos(ahorro)}</strong> en comparación con ${peorBanco}.
                 </p>
+                <p style="font-size: 12px; margin-top: 8px; color: #666;">
+                    <strong>Análisis:</strong> ${mejorBanco} tiene menor TNA (${mejorTNA}% vs ${peorTNA}%) y menor costo total.
+                </p>
+            </div>
+        `;
+    } else {
+        html += `
+            <div style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #1e40af;">
+                <h4 style="margin-bottom: 10px; color: #1e40af;">⚖️ Mismo Costo Total</h4>
+                <p style="color: #333;">Ambos bancos tienen el mismo costo total a pagar.</p>
             </div>
         `;
     }
@@ -841,17 +743,18 @@ function actualizarTablaResumen(tabla1, tabla2) {
 
 function actualizarTabla(tabla) {
     let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Cuota</th>
-                    <th>Cuota Total</th>
-                    <th>Interés</th>
-                    <th>Amortización</th>
-                    <th>Saldo</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Cuota Total</th>
+                        <th>Interés</th>
+                        <th>Amortización</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
 
     tabla.forEach(fila => {
@@ -867,8 +770,9 @@ function actualizarTabla(tabla) {
     });
 
     html += `
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     `;
 
     document.getElementById("tablaAmortizacion").innerHTML = html;
@@ -876,29 +780,23 @@ function actualizarTabla(tabla) {
 
 // Función para cambiar entre pestañas
 function openTab(tabId) {
-    // Ocultar todas las pestañas
     const tabContents = document.getElementsByClassName('tab-content');
     for (let i = 0; i < tabContents.length; i++) {
         tabContents[i].classList.remove('active');
     }
     
-    // Desactivar todos los botones
     const tabButtons = document.getElementsByClassName('tab-button');
     for (let i = 0; i < tabButtons.length; i++) {
         tabButtons[i].classList.remove('active');
     }
     
-    // Activar la pestaña seleccionada
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
 
 // Calcular automáticamente al cargar
 window.addEventListener('load', () => {
-    // Establecer valores por defecto
     document.getElementById('monto').value = 150000;
     document.getElementById('cuotas').value = 12;
-    
-    // Calcular automáticamente
     calcularYActualizar();
 });
