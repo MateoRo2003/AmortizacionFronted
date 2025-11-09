@@ -914,7 +914,19 @@ body {
 .chart-card, .kpi-card, .metricas-adicionales, .filters {
     animation: fadeIn 0.5s ease-out;
 }
+.sistema-selector {
+    display: inline-block;
+    margin-left: 10px;
+}
 
+.sistema-selector select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+    color: #333;
+}
 /* Efectos de glassmorphism mejorados */
 .glass {
     background: var(--glass);

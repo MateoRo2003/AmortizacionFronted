@@ -9,6 +9,85 @@ function formatearPesos(valor) {
         minimumFractionDigits: 0
     }).format(valor);
 }
+function cambiarSistemaAmortizacion() {
+    const sistema = document.getElementById("sistemaAmortizacion").value;
+    
+    if (datoPrincipal) {
+        // Recalcular con el nuevo sistema
+        recalcularConSistema(sistema);
+    }
+}
+async function recalcularConSistema(sistema) {
+    if (!datoPrincipal) return;
+
+    document.getElementById("loading").classList.add("active");
+
+    const payload = {
+        monto: datoPrincipal.monto,
+        cuotas: datoPrincipal.cuotas,
+        banco: datoPrincipal.banco,
+        sistema: sistema  // Enviar el sistema seleccionado
+    };
+
+    try {
+        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        
+        if (data.error) {
+            Swal.fire("Error", data.error, "error");
+            return;
+        }
+
+        // Actualizar datos principales con el nuevo sistema
+        datoPrincipal.data = data;
+        datoPrincipal.sistema = sistema;
+
+        // Actualizar dashboard
+        actualizarDashboard(data, datoPrincipal.banco);
+
+        // Si hay comparación, actualizarla también
+        if (datoComparacion) {
+            await actualizarComparacionConSistema(sistema);
+        }
+
+    } catch (error) {
+        Swal.fire("Error", "Error al recalcular: " + error.message, "error");
+    } finally {
+        document.getElementById("loading").classList.remove("active");
+    }
+}
+async function actualizarComparacionConSistema(sistemaPrincipal) {
+    if (!datoComparacion) return;
+
+    const payload = {
+        monto: datoPrincipal.monto,
+        cuotas: datoPrincipal.cuotas,
+        banco: datoComparacion.banco,
+        sistema: sistemaPrincipal  // Aplicar el mismo sistema a la comparación para consistencia
+    };
+
+    try {
+        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        
+        if (!data.error) {
+            datoComparacion.data = data;
+            mostrarComparacion();
+        }
+    } catch (error) {
+        console.error("Error al actualizar comparación:", error);
+    }
+}
 
 // CORREGIDO: Cálculo de métricas financieras 
 function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
@@ -46,16 +125,19 @@ async function calcularYActualizar() {
     if (!validarCampos()) {
         return;
     }
+    
     const monto = document.getElementById("monto").value;
     const cuotas = document.getElementById("cuotas").value;
     const banco = document.getElementById("banco").value;
+    const sistema = document.getElementById("sistemaAmortizacion").value; // Obtener sistema seleccionado
 
     document.getElementById("loading").classList.add("active");
 
     const payload = {
         monto: Number(monto),
         cuotas: Number(cuotas),
-        banco: banco
+        banco: banco,
+        sistema: sistema  // Incluir sistema en el payload
     };
 
     try {
@@ -66,7 +148,7 @@ async function calcularYActualizar() {
         });
 
         const data = await res.json();
-        console.log("Respuesta del backend:", data);
+        
         if (data.error) {
             Swal.fire("Error", data.error, "error");
             return;
@@ -76,7 +158,8 @@ async function calcularYActualizar() {
             banco: banco,
             data: data,
             monto: Number(monto),
-            cuotas: Number(cuotas)
+            cuotas: Number(cuotas),
+            sistema: sistema
         };
 
         actualizarDashboard(data, banco);
@@ -90,7 +173,6 @@ async function calcularYActualizar() {
         document.getElementById("loading").classList.remove("active");
     }
 }
-
 async function compararBancos() {
     const bancoComp = document.getElementById("bancoComparacion").value;
     if (!datoPrincipal) {
@@ -372,6 +454,9 @@ function validarCampos() {
 }
 
 function actualizarGraficos(tabla) {
+    const sistema = document.getElementById("sistemaAmortizacion").value;
+    const sistemaLabel = sistema === 'aleman' ? 'Sistema Alemán' : 'Sistema Francés';
+
     // Gráfico de evolución del saldo
     const ctxSaldo = document.getElementById('chartSaldo').getContext('2d');
     if (charts.saldo) charts.saldo.destroy();
@@ -392,6 +477,11 @@ function actualizarGraficos(tabla) {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
+                title: {
+                    display: true,
+                    text: `Evolución del Saldo - ${sistemaLabel}`,
+                    font: { size: 14 }
+                },
                 legend: { display: false }
             },
             scales: {
@@ -407,7 +497,7 @@ function actualizarGraficos(tabla) {
         }
     });
 
-    // Gráfico de composición
+    // Gráfico de composición - especialmente útil para ver la diferencia entre sistemas
     const totalInteres = tabla.reduce((sum, r) => sum + r.Interes, 0);
     const totalAmortizacion = tabla.reduce((sum, r) => sum + r.Amortizacion, 0);
 
@@ -426,18 +516,23 @@ function actualizarGraficos(tabla) {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
+                title: {
+                    display: true,
+                    text: `Composición Total - ${sistemaLabel}`,
+                    font: { size: 14 }
+                },
                 legend: { position: 'bottom' }
             }
         }
     });
 
-    // Gráfico de distribución
+    // Gráfico de distribución por cuotas - muestra claramente la diferencia entre sistemas
     const ctxDist = document.getElementById('chartDistribucion').getContext('2d');
     if (charts.distribucion) charts.distribucion.destroy();
     charts.distribucion = new Chart(ctxDist, {
         type: 'bar',
         data: {
-            labels: tabla.slice(0, 12).map(r => `${r.Cuota}`), // Mostrar solo primeras 12 cuotas para mejor visualización
+            labels: tabla.slice(0, 12).map(r => `${r.Cuota}`),
             datasets: [{
                 label: 'Interés',
                 data: tabla.slice(0, 12).map(r => r.Interes),
@@ -451,37 +546,67 @@ function actualizarGraficos(tabla) {
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Distribución por Cuota - ${sistemaLabel}`,
+                    font: { size: 14 }
+                }
+            },
             scales: {
-                x: { stacked: true },
+                x: { 
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Cuota'
+                    }
+                },
                 y: {
                     stacked: true,
                     ticks: {
                         callback: function (value) {
                             return '$' + value.toLocaleString();
                         }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monto ($)'
                     }
                 }
             }
         }
     });
 
-    // Gráfico de cuotas mensuales (primeras 12 cuotas)
+    // Gráfico de cuotas mensuales - muestra la diferencia clave entre sistemas
     const ctxCuotas = document.getElementById('chartCuotas').getContext('2d');
     if (charts.cuotas) charts.cuotas.destroy();
+    
+    // Para sistema alemán, las cuotas son decrecientes
+    const cuotasData = tabla.slice(0, 12).map(r => r.Cuota_total);
+    
     charts.cuotas = new Chart(ctxCuotas, {
-        type: 'bar',
+        type: sistema === 'aleman' ? 'line' : 'bar', // Línea para alemán, barras para francés
         data: {
             labels: tabla.slice(0, 12).map(r => `Cuota ${r.Cuota}`),
             datasets: [{
                 label: 'Cuota Total',
-                data: tabla.slice(0, 12).map(r => r.Cuota_total),
-                backgroundColor: '#30cfd0'
+                data: cuotasData,
+                backgroundColor: sistema === 'aleman' ? 'rgba(48, 207, 208, 0.2)' : '#30cfd0',
+                borderColor: sistema === 'aleman' ? '#30cfd0' : undefined,
+                borderWidth: sistema === 'aleman' ? 2 : undefined,
+                fill: sistema === 'aleman' ? true : undefined,
+                tension: sistema === 'aleman' ? 0.4 : undefined
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
+                title: {
+                    display: true,
+                    text: `Cuotas Mensuales - ${sistemaLabel}`,
+                    font: { size: 14 }
+                },
                 legend: { display: false }
             },
             scales: {
@@ -491,6 +616,16 @@ function actualizarGraficos(tabla) {
                         callback: function (value) {
                             return '$' + value.toLocaleString();
                         }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monto de Cuota ($)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Número de Cuota'
                     }
                 }
             }
@@ -719,7 +854,7 @@ function actualizarTablaResumen() {
         html += `
             <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px; border-left: 4px solid #16a34a;">
                 <h4 style="margin-bottom: 10px; color: #16a34a;">
-                    💰 Mejor Opción: ${mejorBanco}
+                    Mejor Opción: ${mejorBanco}
                 </h4>
                 <p style="color: #333; margin-bottom: 8px;">
                     Eligiendo <strong>${mejorBanco}</strong> ahorrarías <strong>${formatearPesos(ahorro)}</strong> en comparación con ${peorBanco}.
@@ -742,7 +877,17 @@ function actualizarTablaResumen() {
 }
 
 function actualizarTabla(tabla) {
+    const sistema = document.getElementById("sistemaAmortizacion").value;
+    const sistemaLabel = sistema === 'aleman' ? 'Sistema Alemán' : 'Sistema Francés';
+    
     let html = `
+        <div style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-radius: 6px; border-left: 4px solid #667eea;">
+            <strong>Sistema de Amortización:</strong> ${sistemaLabel}
+            ${sistema === 'aleman' ? 
+                ' (Amortización constante - Cuotas decrecientes)' : 
+                ' (Cuota constante - Composición variable)'
+            }
+        </div>
         <div style="max-height: 400px; overflow-y: auto;">
             <table>
                 <thead>
@@ -795,8 +940,8 @@ function openTab(tabId) {
 }
 
 // Calcular automáticamente al cargar
-// window.addEventListener('load', () => {
-//     document.getElementById('monto').value = 150000;
-//     document.getElementById('cuotas').value = 12;
-//     calcularYActualizar();
-// });
+window.addEventListener('load', () => {
+    document.getElementById('monto').value = 150000;
+    document.getElementById('cuotas').value = 12;
+    calcularYActualizar();
+});
