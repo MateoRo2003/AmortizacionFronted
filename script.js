@@ -940,8 +940,8 @@ function openTab(tabId) {
 }
 
 // Calcular automáticamente al cargar
-window.addEventListener('load', () => {
-    document.getElementById('monto').value = 150000;
-    document.getElementById('cuotas').value = 12;
-    calcularYActualizar();
-});
+// window.addEventListener('load', () => {
+//     document.getElementById('monto').value = 150000;
+//     document.getElementById('cuotas').value = 12;
+//     calcularYActualizar();
+// });
