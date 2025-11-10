@@ -190,7 +190,7 @@ async function calcularYActualizar() {
                     // Aumentar timeout para dar tiempo a que Render active la API
                     signal: AbortSignal.timeout(30000) // 30 segundos timeout
                 });
-
+                    console.log("Respuesta recibida en intento", res);
                 if (!res.ok) {
                     throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 }
