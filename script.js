@@ -42,7 +42,7 @@ async function recalcularConSistema(sistema) {
 
     try {
         // Retraso de 2 segundos
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
@@ -167,8 +167,8 @@ async function calcularYActualizar() {
     };
 
     try {
-        // Retraso de 2 segundos
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Retraso de 1 segundo
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
@@ -232,7 +232,18 @@ async function compararBancos() {
         return;
     }
 
-    document.getElementById("loading").classList.add("active");
+    // Mostrar SweetAlert simple de carga
+    Swal.fire({
+        title: 'Calculando...',
+        text: 'Por favor espere',
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     const payload = {
         monto: datoPrincipal.monto,
@@ -241,6 +252,9 @@ async function compararBancos() {
     };
 
     try {
+        // Retraso de 2 segundos
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -260,13 +274,14 @@ async function compararBancos() {
         };
 
         mostrarComparacion();
+
+        // Cerrar el SweetAlert automáticamente sin mostrar mensaje de éxito
+        Swal.close();
+
     } catch (error) {
         Swal.fire("Error", "Error al comparar: " + error.message, "error");
-    } finally {
-        document.getElementById("loading").classList.remove("active");
     }
 }
-
 function limpiarComparacion() {
     datoComparacion = null;
     document.getElementById("bancoComparacion").value = "";
