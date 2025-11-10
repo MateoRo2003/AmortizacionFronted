@@ -147,9 +147,9 @@ async function calcularYActualizar() {
     const sistema = document.getElementById("sistemaAmortizacion").value;
 
     // Mostrar SweetAlert simple de carga
-    Swal.fire({
+    const loadingAlert = Swal.fire({
         title: 'Calculando...',
-        text: 'Por favor espere',
+        text: 'Iniciando simulación del préstamo',
         icon: 'info',
         showConfirmButton: false,
         allowOutsideClick: false,
@@ -167,22 +167,58 @@ async function calcularYActualizar() {
     };
 
     try {
-        // Retraso de 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Intentar hasta 3 veces con delays crecientes
+        let data;
+        let lastError;
 
-        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                // Actualizar mensaje según el intento
+                if (attempt > 1) {
+                    Swal.update({
+                        text: `Reintentando... (${attempt}/3)`
+                    });
+                }
 
-        const data = await res.json();
+                // Delay progresivo: 2s, 4s, 6s
+                await new Promise(resolve => setTimeout(resolve, attempt * 2000));
 
-        if (data.error) {
-            Swal.fire("Error", data.error, "error");
-            return;
+                const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    // Aumentar timeout para dar tiempo a que Render active la API
+                    signal: AbortSignal.timeout(30000) // 30 segundos timeout
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+
+                data = await res.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Si llegamos aquí, la petición fue exitosa
+                break;
+
+            } catch (attemptError) {
+                lastError = attemptError;
+                console.log(`Intento ${attempt} fallido:`, attemptError.message);
+
+                // Si es el último intento, lanzar el error
+                if (attempt === 3) {
+                    throw lastError;
+                }
+
+                // Continuar con el siguiente intento
+                continue;
+            }
         }
 
+        // Si llegamos aquí, la petición fue exitosa
         datoPrincipal = {
             banco: banco,
             data: data,
@@ -197,11 +233,33 @@ async function calcularYActualizar() {
             mostrarComparacion();
         }
 
-        // Cerrar el SweetAlert automáticamente sin mostrar mensaje de éxito
+        // Cerrar el SweetAlert automáticamente
         Swal.close();
 
     } catch (error) {
-        Swal.fire("Error", "Error al calcular: " + error.message, "error");
+        // Mostrar error específico
+        Swal.fire({
+            title: 'Error de Conexión',
+            html: `
+                <div style="text-align: left;">
+                    <p>No se pudo conectar con el servidor después de varios intentos.</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        <strong>Detalles:</strong> ${error.message}
+                    </p>
+                    <p style="font-size: 11px; color: #999; margin-top: 5px;">
+                        Esto puede pasar cuando el servidor está iniciando. Intenta nuevamente en unos segundos.
+                    </p>
+                </div>
+            `,
+            icon: 'error',
+            confirmButtonText: 'Reintentar',
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                calcularYActualizar();
+            }
+        });
     }
 }
 async function compararBancos() {
