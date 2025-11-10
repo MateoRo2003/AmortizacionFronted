@@ -171,12 +171,12 @@ async function calcularYActualizar() {
         let data;
         let lastError;
 
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        for (let attempt = 1; attempt <= 5; attempt++) {
             try {
                 // Actualizar mensaje según el intento
                 if (attempt > 1) {
                     Swal.update({
-                        text: `Reintentando... (${attempt}/3)`
+                        text: `Reintentando... (${attempt}/5)`
                     });
                 }
 
