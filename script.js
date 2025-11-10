@@ -147,9 +147,9 @@ async function calcularYActualizar() {
     const sistema = document.getElementById("sistemaAmortizacion").value;
 
     // Mostrar SweetAlert simple de carga
-    const loadingAlert = Swal.fire({
+    Swal.fire({
         title: 'Calculando...',
-        text: 'Iniciando simulación del préstamo',
+        text: 'Conectando con el servidor',
         icon: 'info',
         showConfirmButton: false,
         allowOutsideClick: false,
@@ -167,58 +167,29 @@ async function calcularYActualizar() {
     };
 
     try {
-        // Intentar hasta 3 veces con delays crecientes
-        let data;
-        let lastError;
-        
-        for (let attempt = 1; attempt <= 3; attempt++) {
-            try {
-                // Actualizar mensaje según el intento
-                if (attempt > 1) {
-                    Swal.update({
-                        text: `Reintentando... (${attempt}/3)`
-                    });
-                }
+        // Solo un intento pero con timeout manual más largo
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 segundos
 
-                // Delay progresivo: 2s, 4s, 6s
-                await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+        const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
 
-                const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                    // Aumentar timeout para dar tiempo a que Render active la API
-                    signal: AbortSignal.timeout(30000) // 30 segundos timeout
-                });
-                    console.log("Respuesta recibida en intento", res);
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-                }
+        clearTimeout(timeoutId);
 
-                data = await res.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Si llegamos aquí, la petición fue exitosa
-                break;
-
-            } catch (attemptError) {
-                lastError = attemptError;
-                console.log(`Intento ${attempt} fallido:`, attemptError.message);
-                
-                // Si es el último intento, lanzar el error
-                if (attempt === 3) {
-                    throw lastError;
-                }
-                
-                // Continuar con el siguiente intento
-                continue;
-            }
+        if (!res.ok) {
+            throw new Error(`Error ${res.status}: ${res.statusText}`);
         }
 
-        // Si llegamos aquí, la petición fue exitosa
+        const data = await res.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
         datoPrincipal = {
             banco: banco,
             data: data,
@@ -237,27 +208,27 @@ async function calcularYActualizar() {
         Swal.close();
 
     } catch (error) {
-        // Mostrar error específico
+        // Cerrar el loading primero
+        Swal.close();
+        
+        // Mostrar error con opción de reintentar manualmente
         Swal.fire({
-            title: 'Error de Conexión',
+            title: 'Servidor en inicio',
             html: `
                 <div style="text-align: left;">
-                    <p>No se pudo conectar con el servidor después de varios intentos.</p>
+                    <p>El servidor está iniciando. Esto puede tardar hasta 60 segundos.</p>
                     <p style="font-size: 12px; color: #666; margin-top: 10px;">
-                        <strong>Detalles:</strong> ${error.message}
-                    </p>
-                    <p style="font-size: 11px; color: #999; margin-top: 5px;">
-                        Esto puede pasar cuando el servidor está iniciando. Intenta nuevamente en unos segundos.
+                        <strong>Detalles:</strong> ${error.name === 'AbortError' ? 'Tiempo de espera agotado' : error.message}
                     </p>
                 </div>
             `,
-            icon: 'error',
-            confirmButtonText: 'Reintentar',
+            icon: 'warning',
+            confirmButtonText: 'Reintentar ahora',
             showCancelButton: true,
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                calcularYActualizar();
+            cancelButtonText: 'Cancelar',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return calcularYActualizar();
             }
         });
     }
