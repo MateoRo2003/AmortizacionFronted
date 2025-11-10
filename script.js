@@ -170,7 +170,7 @@ async function calcularYActualizar() {
         // Intentar hasta 3 veces con delays crecientes
         let data;
         let lastError;
-
+        
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
                 // Actualizar mensaje según el intento
@@ -207,12 +207,12 @@ async function calcularYActualizar() {
             } catch (attemptError) {
                 lastError = attemptError;
                 console.log(`Intento ${attempt} fallido:`, attemptError.message);
-
+                
                 // Si es el último intento, lanzar el error
                 if (attempt === 3) {
                     throw lastError;
                 }
-
+                
                 // Continuar con el siguiente intento
                 continue;
             }
