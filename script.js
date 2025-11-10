@@ -11,7 +11,7 @@ function formatearPesos(valor) {
 }
 function cambiarSistemaAmortizacion() {
     const sistema = document.getElementById("sistemaAmortizacion").value;
-    
+
     if (datoPrincipal) {
         // Recalcular con el nuevo sistema
         recalcularConSistema(sistema);
@@ -20,16 +20,30 @@ function cambiarSistemaAmortizacion() {
 async function recalcularConSistema(sistema) {
     if (!datoPrincipal) return;
 
-    document.getElementById("loading").classList.add("active");
+    // Mostrar SweetAlert simple de carga
+    Swal.fire({
+        title: 'Calculando...',
+        text: 'Por favor espere',
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     const payload = {
         monto: datoPrincipal.monto,
         cuotas: datoPrincipal.cuotas,
         banco: datoPrincipal.banco,
-        sistema: sistema  // Enviar el sistema seleccionado
+        sistema: sistema
     };
 
     try {
+        // Retraso de 2 segundos
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -37,7 +51,7 @@ async function recalcularConSistema(sistema) {
         });
 
         const data = await res.json();
-        
+
         if (data.error) {
             Swal.fire("Error", data.error, "error");
             return;
@@ -55,10 +69,11 @@ async function recalcularConSistema(sistema) {
             await actualizarComparacionConSistema(sistema);
         }
 
+        // Cerrar el SweetAlert automáticamente sin mostrar mensaje de éxito
+        Swal.close();
+
     } catch (error) {
         Swal.fire("Error", "Error al recalcular: " + error.message, "error");
-    } finally {
-        document.getElementById("loading").classList.remove("active");
     }
 }
 async function actualizarComparacionConSistema(sistemaPrincipal) {
@@ -79,7 +94,7 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
         });
 
         const data = await res.json();
-        
+
         if (!data.error) {
             datoComparacion.data = data;
             mostrarComparacion();
@@ -125,22 +140,36 @@ async function calcularYActualizar() {
     if (!validarCampos()) {
         return;
     }
-    
+
     const monto = document.getElementById("monto").value;
     const cuotas = document.getElementById("cuotas").value;
     const banco = document.getElementById("banco").value;
-    const sistema = document.getElementById("sistemaAmortizacion").value; // Obtener sistema seleccionado
+    const sistema = document.getElementById("sistemaAmortizacion").value;
 
-    document.getElementById("loading").classList.add("active");
+    // Mostrar SweetAlert simple de carga
+    Swal.fire({
+        title: 'Calculando...',
+        text: 'Por favor espere',
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     const payload = {
         monto: Number(monto),
         cuotas: Number(cuotas),
         banco: banco,
-        sistema: sistema  // Incluir sistema en el payload
+        sistema: sistema
     };
 
     try {
+        // Retraso de 2 segundos
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         const res = await fetch("https://amortizacionbackend.onrender.com/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -148,7 +177,7 @@ async function calcularYActualizar() {
         });
 
         const data = await res.json();
-        
+
         if (data.error) {
             Swal.fire("Error", data.error, "error");
             return;
@@ -167,10 +196,12 @@ async function calcularYActualizar() {
         if (datoComparacion) {
             mostrarComparacion();
         }
+
+        // Cerrar el SweetAlert automáticamente sin mostrar mensaje de éxito
+        Swal.close();
+
     } catch (error) {
         Swal.fire("Error", "Error al calcular: " + error.message, "error");
-    } finally {
-        document.getElementById("loading").classList.remove("active");
     }
 }
 async function compararBancos() {
@@ -184,7 +215,7 @@ async function compararBancos() {
         return;
     }
     if (!bancoComp) {
-       Swal.fire({
+        Swal.fire({
             icon: "error",
             title: "Banco inválido",
             text: "Selecciona un banco"
@@ -276,7 +307,7 @@ function actualizarDashboard(data, banco) {
 
     const cfteaElement = document.getElementById("cftea");
     if (cfteaElement) {
-        cfteaElement.innerHTML = metricas.cftea !== 'N/A' 
+        cfteaElement.innerHTML = metricas.cftea !== 'N/A'
             ? metricas.cftea + "%" + (metricas.cfteaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '')
             : 'N/A';
     }
@@ -554,7 +585,7 @@ function actualizarGraficos(tabla) {
                 }
             },
             scales: {
-                x: { 
+                x: {
                     stacked: true,
                     title: {
                         display: true,
@@ -580,10 +611,10 @@ function actualizarGraficos(tabla) {
     // Gráfico de cuotas mensuales - muestra la diferencia clave entre sistemas
     const ctxCuotas = document.getElementById('chartCuotas').getContext('2d');
     if (charts.cuotas) charts.cuotas.destroy();
-    
+
     // Para sistema alemán, las cuotas son decrecientes
     const cuotasData = tabla.slice(0, 12).map(r => r.Cuota_total);
-    
+
     charts.cuotas = new Chart(ctxCuotas, {
         type: sistema === 'aleman' ? 'line' : 'bar', // Línea para alemán, barras para francés
         data: {
@@ -843,14 +874,14 @@ function actualizarTablaResumen() {
     // Si total1 < total2 → banco1 (datoPrincipal) es MEJOR
     // Si total1 > total2 → banco2 (datoComparacion) es MEJOR
     const ahorro = Math.abs(total1 - total2);
-    
+
     if (total1 !== total2) {
         const esMejorBanco1 = total1 < total2;
         const mejorBanco = esMejorBanco1 ? datoPrincipal.banco : datoComparacion.banco;
         const peorBanco = esMejorBanco1 ? datoComparacion.banco : datoPrincipal.banco;
         const mejorTNA = esMejorBanco1 ? datoPrincipal.data.TNA : datoComparacion.data.TNA;
         const peorTNA = esMejorBanco1 ? datoComparacion.data.TNA : datoPrincipal.data.TNA;
-        
+
         html += `
             <div style="margin-top: 20px; padding: 15px; background: #dcfce7; border-radius: 8px; border-left: 4px solid #16a34a;">
                 <h4 style="margin-bottom: 10px; color: #16a34a;">
@@ -879,14 +910,14 @@ function actualizarTablaResumen() {
 function actualizarTabla(tabla) {
     const sistema = document.getElementById("sistemaAmortizacion").value;
     const sistemaLabel = sistema === 'aleman' ? 'Sistema Alemán' : 'Sistema Francés';
-    
+
     let html = `
         <div style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-radius: 6px; border-left: 4px solid #667eea;">
             <strong>Sistema de Amortización:</strong> ${sistemaLabel}
-            ${sistema === 'aleman' ? 
-                ' (Amortización constante - Cuotas decrecientes)' : 
-                ' (Cuota constante - Composición variable)'
-            }
+            ${sistema === 'aleman' ?
+            ' (Amortización constante - Cuotas decrecientes)' :
+            ' (Cuota constante - Composición variable)'
+        }
         </div>
         <div style="max-height: 400px; overflow-y: auto;">
             <table>
@@ -929,12 +960,12 @@ function openTab(tabId) {
     for (let i = 0; i < tabContents.length; i++) {
         tabContents[i].classList.remove('active');
     }
-    
+
     const tabButtons = document.getElementsByClassName('tab-button');
     for (let i = 0; i < tabButtons.length; i++) {
         tabButtons[i].classList.remove('active');
     }
-    
+
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
@@ -951,21 +982,21 @@ function exportarAExcel() {
     const sistema = document.getElementById("sistemaAmortizacion").value;
     const sistemaLabel = sistema === 'aleman' ? 'Sistema Alemán' : 'Sistema Francés';
     const tabla = datoPrincipal.data.Tabla;
-    
+
     // Calcular totales
     const totalPagar = tabla.reduce((sum, row) => sum + row.Cuota_total, 0);
     const totalInteres = tabla.reduce((sum, row) => sum + row.Interes, 0);
     const totalAmortizacion = tabla.reduce((sum, row) => sum + row.Amortizacion, 0);
-    
+
     // Crear libro de trabajo
     const wb = XLSX.utils.book_new();
-    
+
     // Datos para la hoja principal
     const datosHoja = [];
-    
+
     // Título principal
     datosHoja.push(['PANEL FINANCIERO - TABLA DE AMORTIZACIÓN'], ['']);
-    
+
     // Información del préstamo
     datosHoja.push(
         ['INFORMACIÓN DEL PRÉSTAMO', '', '', '', ''],
@@ -981,7 +1012,7 @@ function exportarAExcel() {
         ['', '', '', '', ''],
         ['', '', '', '', '']
     );
-    
+
     // Encabezados de la tabla
     datosHoja.push([
         'N° CUOTA',
@@ -990,7 +1021,7 @@ function exportarAExcel() {
         'AMORTIZACIÓN',
         'SALDO PENDIENTE'
     ]);
-    
+
     // Datos de la tabla
     tabla.forEach(fila => {
         datosHoja.push([
@@ -1001,19 +1032,19 @@ function exportarAExcel() {
             fila.Saldo
         ]);
     });
-    
+
     // Totales al final
     datosHoja.push(
         ['', '', '', '', ''],
         ['TOTALES', totalPagar, totalInteres, totalAmortizacion, '-']
     );
-    
+
     // Crear hoja de trabajo
     const ws = XLSX.utils.aoa_to_sheet(datosHoja);
-    
+
     // Aplicar estilos y formato
     if (!ws['!merges']) ws['!merges'] = [];
-    
+
     // Fusionar celdas para títulos
     ws['!merges'].push(
         { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }, // Título principal
@@ -1021,7 +1052,7 @@ function exportarAExcel() {
         { s: { r: 8, c: 0 }, e: { r: 8, c: 1 } }, // Resumen financiero
         { s: { r: 12 + tabla.length, c: 0 }, e: { r: 12 + tabla.length, c: 0 } } // Totales
     );
-    
+
     // Definir anchos de columna
     ws['!cols'] = [
         { wch: 10 }, // Columna A: N° Cuota
@@ -1030,17 +1061,17 @@ function exportarAExcel() {
         { wch: 15 }, // Columna D: Amortización
         { wch: 18 }  // Columna E: Saldo Pendiente
     ];
-    
+
     // Agregar hoja al libro
     XLSX.utils.book_append_sheet(wb, ws, 'Tabla de Amortización');
-    
+
     // Crear hoja de resumen
     crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmortizacion);
-    
+
     // Generar archivo
     const fileName = `Amortizacion_${datoPrincipal.banco}_${sistemaLabel.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
-    
+
     // Mostrar confirmación
     Swal.fire({
         icon: 'success',
@@ -1066,7 +1097,7 @@ function exportarAExcel() {
 
 function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmortizacion) {
     const datosResumen = [];
-    
+
     // Encabezado del resumen
     datosResumen.push(
         ['RESUMEN EJECUTIVO - ANÁLISIS FINANCIERO'],
@@ -1079,8 +1110,8 @@ function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmort
         ['', '', 'Relación Interés/Capital:', (totalInteres / totalAmortizacion * 100).toFixed(2) + '%'],
         [''],
         ['ANÁLISIS POR CUOTAS', '', 'INDICADORES CLAVE'],
-        ['Primera Cuota:', formatearPesos(datoPrincipal.data.Tabla[0].Cuota_total), 'TEA Aproximada:', (Math.pow(1 + datoPrincipal.data.TNA/100/12, 12) - 1).toFixed(2) + '%'],
-        ['Última Cuota:', formatearPesos(datoPrincipal.data.Tabla[datoPrincipal.data.Tabla.length - 1].Cuota_total), 'TEM:', (datoPrincipal.data.TNA/12).toFixed(2) + '%'],
+        ['Primera Cuota:', formatearPesos(datoPrincipal.data.Tabla[0].Cuota_total), 'TEA Aproximada:', (Math.pow(1 + datoPrincipal.data.TNA / 100 / 12, 12) - 1).toFixed(2) + '%'],
+        ['Última Cuota:', formatearPesos(datoPrincipal.data.Tabla[datoPrincipal.data.Tabla.length - 1].Cuota_total), 'TEM:', (datoPrincipal.data.TNA / 12).toFixed(2) + '%'],
         ['Cuota Promedio:', formatearPesos(totalPagar / datoPrincipal.cuotas), 'CFTNA Aprox:', (totalInteres / datoPrincipal.monto * 100).toFixed(2) + '%'],
         [''],
         ['DISTRIBUCIÓN DE PAGOS', '', 'EFICIENCIA DEL PRÉSTAMO'],
@@ -1088,9 +1119,9 @@ function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmort
         ['Intereses:', formatearPesos(totalInteres), 'Porcentaje de Capital:', (totalAmortizacion / totalPagar * 100).toFixed(2) + '%'],
         ['Total:', formatearPesos(totalPagar), 'Relación Costo/Beneficio:', (totalInteres / totalAmortizacion).toFixed(2) + ':1']
     );
-    
+
     const wsResumen = XLSX.utils.aoa_to_sheet(datosResumen);
-    
+
     // Configurar anchos de columna para resumen
     wsResumen['!cols'] = [
         { wch: 25 }, // Columna A
@@ -1098,7 +1129,7 @@ function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmort
         { wch: 25 }, // Columna C
         { wch: 20 }  // Columna D
     ];
-    
+
     XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Ejecutivo');
 }
 // Calcular automáticamente al cargar
