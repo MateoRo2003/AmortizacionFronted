@@ -1062,6 +1062,45 @@ function exportarAExcel() {
         }
     });
 }
+
+
+function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmortizacion) {
+    const datosResumen = [];
+    
+    // Encabezado del resumen
+    datosResumen.push(
+        ['RESUMEN EJECUTIVO - ANÁLISIS FINANCIERO'],
+        [''],
+        ['PARÁMETROS DEL PRÉSTAMO', '', 'MÉTRICAS FINANCIERAS'],
+        ['Sistema de Amortización:', sistemaLabel, 'Total a Pagar:', formatearPesos(totalPagar)],
+        ['Banco:', datoPrincipal.banco, 'Monto del Préstamo:', formatearPesos(datoPrincipal.monto)],
+        ['Cuotas:', datoPrincipal.cuotas, 'Interés Total:', formatearPesos(totalInteres)],
+        ['TNA:', datoPrincipal.data.TNA + '%', 'Costo Financiero:', formatearPesos(totalInteres)],
+        ['', '', 'Relación Interés/Capital:', (totalInteres / totalAmortizacion * 100).toFixed(2) + '%'],
+        [''],
+        ['ANÁLISIS POR CUOTAS', '', 'INDICADORES CLAVE'],
+        ['Primera Cuota:', formatearPesos(datoPrincipal.data.Tabla[0].Cuota_total), 'TEA Aproximada:', (Math.pow(1 + datoPrincipal.data.TNA/100/12, 12) - 1).toFixed(2) + '%'],
+        ['Última Cuota:', formatearPesos(datoPrincipal.data.Tabla[datoPrincipal.data.Tabla.length - 1].Cuota_total), 'TEM:', (datoPrincipal.data.TNA/12).toFixed(2) + '%'],
+        ['Cuota Promedio:', formatearPesos(totalPagar / datoPrincipal.cuotas), 'CFTNA Aprox:', (totalInteres / datoPrincipal.monto * 100).toFixed(2) + '%'],
+        [''],
+        ['DISTRIBUCIÓN DE PAGOS', '', 'EFICIENCIA DEL PRÉSTAMO'],
+        ['Capital:', formatearPesos(totalAmortizacion), 'Porcentaje de Interés:', (totalInteres / totalPagar * 100).toFixed(2) + '%'],
+        ['Intereses:', formatearPesos(totalInteres), 'Porcentaje de Capital:', (totalAmortizacion / totalPagar * 100).toFixed(2) + '%'],
+        ['Total:', formatearPesos(totalPagar), 'Relación Costo/Beneficio:', (totalInteres / totalAmortizacion).toFixed(2) + ':1']
+    );
+    
+    const wsResumen = XLSX.utils.aoa_to_sheet(datosResumen);
+    
+    // Configurar anchos de columna para resumen
+    wsResumen['!cols'] = [
+        { wch: 25 }, // Columna A
+        { wch: 20 }, // Columna B  
+        { wch: 25 }, // Columna C
+        { wch: 20 }  // Columna D
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Ejecutivo');
+}
 // Calcular automáticamente al cargar
 // window.addEventListener('load', () => {
 //     document.getElementById('monto').value = 150000;
