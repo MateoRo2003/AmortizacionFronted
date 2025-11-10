@@ -394,11 +394,11 @@ function validarCampos() {
         return false;
     }
 
-    if (monto > 10000000) {
+    if (monto > 25000000) {
         Swal.fire({
             icon: "warning",
             title: "Monto muy alto",
-            text: "El monto no puede superar los $10.000.000"
+            text: "El monto no puede superar los $25.000.000"
         });
         return false;
     }
@@ -426,7 +426,7 @@ function validarCampos() {
         Swal.fire({
             icon: "warning",
             title: "Demasiadas cuotas",
-            text: "Ingresá un valor menor o igual a 84 cuotas (7 años)."
+            text: "Ingresá un valor menor o igual a 72 cuotas (6 años)."
         });
         return false;
     }
