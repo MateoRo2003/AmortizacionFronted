@@ -316,8 +316,22 @@ function limpiarComparacion() {
     document.getElementById("bancoComparacion").value = "";
     document.getElementById("comparacionSection").style.display = "none";
 
-    document.querySelectorAll('.kpi-subtitle').forEach(el => el.textContent = '');
-    document.querySelectorAll('.metrica-comp').forEach(el => el.textContent = '');
+    // Limpiar KPIs
+    document.querySelectorAll('.kpi-subtitle').forEach(el => {
+        el.textContent = '';
+        el.className = 'kpi-subtitle';
+    });
+    
+    // Limpiar métricas
+    document.querySelectorAll('.metrica-comp').forEach(el => {
+        el.textContent = '';
+        el.className = 'metrica-comp';
+    });
+    
+    // Quitar clase de comparación de métricas items
+    document.querySelectorAll('.metrica-item').forEach(item => {
+        item.classList.remove('con-comparacion');
+    });
 }
 
 function actualizarDashboard(data, banco) {
@@ -333,6 +347,19 @@ function actualizarDashboard(data, banco) {
     document.getElementById("interesTotal").textContent = formatearPesos(interesTotal);
     document.getElementById("cuotaMensual").textContent = formatearPesos(cuotaMensual);
     document.getElementById("tnaAplicada").textContent = data.TNA + "%";
+
+    // Limpiar comparaciones si no hay banco de comparación
+    if (!datoComparacion) {
+        document.querySelectorAll('.kpi-subtitle').forEach(el => {
+            el.textContent = '';
+            el.className = 'kpi-subtitle';
+        });
+        
+        document.querySelectorAll('.metrica-comp').forEach(el => {
+            el.textContent = '';
+            el.className = 'metrica-comp';
+        });
+    }
 
     // Calcular métricas con datos del backend
     const datosBackend = {
@@ -356,9 +383,20 @@ function actualizarDashboard(data, banco) {
             : 'N/A';
     }
 
+    // Agregar clase a métricas items para mejor visualización
+    const metricasItems = document.querySelectorAll('.metrica-item');
+    metricasItems.forEach(item => {
+        if (datoComparacion) {
+            item.classList.add('con-comparacion');
+        } else {
+            item.classList.remove('con-comparacion');
+        }
+    });
+
     actualizarGraficos(tabla);
     actualizarTabla(tabla);
 }
+
 
 // CORREGIDO: Mostrar comparación con lógica correcta
 function mostrarComparacion() {
@@ -390,54 +428,129 @@ function mostrarComparacion() {
     const metricas1 = calcularMetricas(datoPrincipal.data.TNA, monto, cuotas, total1, datosBackend1);
     const metricas2 = calcularMetricas(datoComparacion.data.TNA, monto, cuotas, total2, datosBackend2);
 
-    // CORRECCIÓN: Calcular diferencias (valores POSITIVOS indican que el banco de comparación es PEOR)
+    // Calcular diferencias
     const difTotal = total2 - total1;
     const difInteres = interes2 - interes1;
     const difCuota = cuota2 - cuota1;
     const difTNA = datoComparacion.data.TNA - datoPrincipal.data.TNA;
 
-    // CORRECCIÓN: Mostrar comparaciones con lógica correcta
-    // Si difTotal > 0, el banco comparación es MÁS CARO (rojo)
-    document.getElementById("totalPagarComp").innerHTML =
-        `${datoComparacion.banco}: ${formatearPesos(total2)} <span class="${difTotal > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difTotal > 0 ? '+' : ''}${formatearPesos(difTotal)})</span>`;
+    // Actualizar KPIs con mejor formato
+    actualizarKPIComparacion(
+        "totalPagarComp",
+        "Total a Pagar",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        formatearPesos(total1),
+        formatearPesos(total2),
+        difTotal
+    );
 
-    document.getElementById("interesTotalComp").innerHTML =
-        `${datoComparacion.banco}: ${formatearPesos(interes2)} <span class="${difInteres > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difInteres > 0 ? '+' : ''}${formatearPesos(difInteres)})</span>`;
+    actualizarKPIComparacion(
+        "interesTotalComp",
+        "Interés Total",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        formatearPesos(interes1),
+        formatearPesos(interes2),
+        difInteres
+    );
 
-    document.getElementById("cuotaMensualComp").innerHTML =
-        `${datoComparacion.banco}: ${formatearPesos(cuota2)} <span class="${difCuota > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCuota > 0 ? '+' : ''}${formatearPesos(difCuota)})</span>`;
+    actualizarKPIComparacion(
+        "cuotaMensualComp",
+        "Cuota Mensual",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        formatearPesos(cuota1),
+        formatearPesos(cuota2),
+        difCuota
+    );
 
-    document.getElementById("tnaAplicadaComp").innerHTML =
-        `${datoComparacion.banco}: ${datoComparacion.data.TNA}% <span class="${difTNA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difTNA > 0 ? '+' : ''}${difTNA.toFixed(2)}%)</span>`;
+    actualizarKPIComparacion(
+        "tnaAplicadaComp",
+        "TNA",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        datoPrincipal.data.TNA + "%",
+        datoComparacion.data.TNA + "%",
+        difTNA,
+        true // esPorcentaje
+    );
 
-    // Actualizar comparación de métricas
-    const difTEM = parseFloat(metricas2.tem) - parseFloat(metricas1.tem);
-    const difTEA = parseFloat(metricas2.tea) - parseFloat(metricas1.tea);
-    const difCFT = parseFloat(metricas2.cft) - parseFloat(metricas1.cft);
-    const difCFTNA = parseFloat(metricas2.cftna) - parseFloat(metricas1.cftna);
-
-    document.getElementById("temComp").innerHTML =
-        `${datoComparacion.banco}: ${metricas2.tem}% <span class="${difTEM > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difTEM > 0 ? '+' : ''}${difTEM.toFixed(2)}%)</span>`;
+    // Actualizar métricas financieras con mejor formato
+    actualizarMetricaComparacion(
+        "temComp",
+        "TEM",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        metricas1.tem + "%",
+        metricas2.tem + "%",
+        parseFloat(metricas2.tem) - parseFloat(metricas1.tem),
+        true
+    );
 
     const indicadorTEA2 = metricas2.teaCalculada ? ' <span style="font-size: 10px;">*</span>' : '';
-    document.getElementById("teaComp").innerHTML =
-        `${datoComparacion.banco}: ${metricas2.tea}%${indicadorTEA2} <span class="${difTEA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difTEA > 0 ? '+' : ''}${difTEA.toFixed(2)}%)</span>`;
+    actualizarMetricaComparacion(
+        "teaComp",
+        "TEA",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        metricas1.tea + "%",
+        metricas2.tea + "%" + indicadorTEA2,
+        parseFloat(metricas2.tea) - parseFloat(metricas1.tea),
+        true
+    );
 
-    document.getElementById("cftComp").innerHTML =
-        `${datoComparacion.banco}: ${formatearPesos(metricas2.cft)} <span class="${difCFT > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCFT > 0 ? '+' : ''}${formatearPesos(difCFT)})</span>`;
+    actualizarMetricaComparacion(
+        "cftComp",
+        "CFT",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        formatearPesos(metricas1.cft),
+        formatearPesos(metricas2.cft),
+        parseFloat(metricas2.cft) - parseFloat(metricas1.cft),
+        false
+    );
 
-    document.getElementById("cftnaComp").innerHTML =
-        `${datoComparacion.banco}: ${metricas2.cftna}% <span class="${difCFTNA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCFTNA > 0 ? '+' : ''}${difCFTNA.toFixed(2)}%)</span>`;
+    actualizarMetricaComparacion(
+        "cftnaComp",
+        "CFTNA",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        metricas1.cftna + "%",
+        metricas2.cftna + "%",
+        parseFloat(metricas2.cftna) - parseFloat(metricas1.cftna),
+        true
+    );
 
     const cfteaCompElement = document.getElementById("cfteaComp");
     if (cfteaCompElement && metricas2.cftea !== 'N/A') {
         const difCFTEA = parseFloat(metricas2.cftea) - parseFloat(metricas1.cftea);
         const indicadorCFTEA2 = metricas2.cfteaCalculada ? ' <span style="font-size: 10px;">*</span>' : '';
-        cfteaCompElement.innerHTML =
-            `${datoComparacion.banco}: ${metricas2.cftea}%${indicadorCFTEA2} <span class="${difCFTEA > 0 ? 'diferencia-negativa' : 'diferencia-positiva'}">(${difCFTEA > 0 ? '+' : ''}${difCFTEA.toFixed(2)}%)</span>`;
+        actualizarMetricaComparacion(
+            "cfteaComp",
+            "CFTEA",
+            datoPrincipal.banco,
+            datoComparacion.banco,
+            metricas1.cftea + "%",
+            metricas2.cftea + "%" + indicadorCFTEA2,
+            difCFTEA,
+            true
+        );
     }
 
+    // Mostrar sección de comparación
     document.getElementById("comparacionSection").style.display = "block";
+    
+    // Agregar clase a métricas items para mejor visualización
+    const metricasItems = document.querySelectorAll('.metrica-item');
+    metricasItems.forEach(item => {
+        item.classList.add('con-comparacion');
+        item.classList.add('highlight-new-comparison');
+        setTimeout(() => {
+            item.classList.remove('highlight-new-comparison');
+        }, 1500);
+    });
+
     actualizarGraficosComparacion();
     actualizarTablaResumen();
 }
@@ -1175,4 +1288,76 @@ function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmort
     ];
 
     XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Ejecutivo');
+}
+// Nueva función para actualizar KPIs con mejor formato
+function actualizarKPIComparacion(elementId, label, banco1, banco2, valor1, valor2, diferencia, esPorcentaje = false) {
+    const elemento = document.getElementById(elementId);
+    const claseDiferencia = diferencia > 0 ? 'diferencia-negativa' : 'diferencia-positiva';
+    const signo = diferencia > 0 ? '+' : '';
+    
+    let textoDiferencia = '';
+    if (esPorcentaje) {
+        textoDiferencia = `(${signo}${diferencia.toFixed(2)}%)`;
+    } else {
+        textoDiferencia = `(${signo}${formatearPesos(diferencia)})`;
+    }
+    
+    elemento.innerHTML = `
+        <div class="comparacion-detalle">
+            <div class="comparacion-fila banco-principal">
+                <span class="nombre">${banco1}</span>
+                <span class="valor">${valor1}</span>
+            </div>
+            <div class="comparacion-fila banco-comparacion">
+                <span class="nombre">${banco2}</span>
+                <span class="valor">${valor2}</span>
+            </div>
+        </div>
+        <div style="margin-top: 4px; text-align: center;">
+            <span class="tooltip-diferencia ${diferencia > 0 ? 'tooltip-negativo' : 'tooltip-positivo'}">
+                ${textoDiferencia}
+            </span>
+        </div>
+    `;
+    
+    // Agregar clase según la diferencia
+    elemento.className = 'kpi-subtitle';
+    if (diferencia > 0) {
+        elemento.classList.add('comparacion-negativa');
+    } else if (diferencia < 0) {
+        elemento.classList.add('comparacion-positiva');
+    } else {
+        elemento.classList.add('comparacion-neutra');
+    }
+}
+function actualizarMetricaComparacion(elementId, label, banco1, banco2, valor1, valor2, diferencia, esPorcentaje = false) {
+    const elemento = document.getElementById(elementId);
+    const claseDiferencia = diferencia > 0 ? 'comparacion-negativa' : 
+                          diferencia < 0 ? 'comparacion-positiva' : 'comparacion-neutra';
+    
+    let textoDiferencia = '';
+    if (diferencia !== 0) {
+        const signo = diferencia > 0 ? '+' : '';
+        if (esPorcentaje) {
+            textoDiferencia = ` (${signo}${Math.abs(diferencia).toFixed(2)}%)`;
+        } else {
+            textoDiferencia = ` (${signo}${formatearPesos(Math.abs(diferencia))})`;
+        }
+    }
+    
+    elemento.innerHTML = `
+        <div class="comparacion-detalle">
+            <div class="comparacion-fila banco-principal">
+                <span class="nombre">${banco1}</span>
+                <span class="valor">${valor1}</span>
+            </div>
+            <div class="comparacion-fila banco-comparacion">
+                <span class="nombre">${banco2}</span>
+                <span class="valor">${valor2}</span>
+            </div>
+        </div>
+        ${textoDiferencia ? `<div style="margin-top: 4px; font-weight: 700; color: ${diferencia > 0 ? '#dc2626' : '#059669'}">${textoDiferencia}</div>` : ''}
+    `;
+    
+    elemento.className = `metrica-comp ${claseDiferencia}`;
 }

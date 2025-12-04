@@ -1,0 +1,90 @@
+/* ============================================
+   RESET Y VARIABLES GLOBALES
+   ============================================ */
+
+/* Reset universal */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Variables CSS (Custom Properties) */
+:root {
+    /* Colores primarios */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #8b5cf6;
+    
+    /* Colores secundarios */
+    --secondary: #06d6a0;
+    --accent: #f59e0b;
+    
+    /* Escala de grises/neutrales */
+    --neutral: #64748b;
+    --neutral-light: #f8fafc;
+    --neutral-dark: #1e293b;
+    
+    /* Colores de estado */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --white: #ffffff;
+    
+    /* Efectos glassmorphism */
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-dark: rgba(255, 255, 255, 0.12);
+    
+    /* Sombras */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    
+    /* Bordes */
+    --border-radius: 16px;
+    --border-radius-sm: 12px;
+    
+    /* Transiciones */
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilos base del body */
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 16px;
+    color: var(--neutral-dark);
+    line-height: 1.6;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+}
+
+/* Scrollbar personalizado */
+@media (min-width: 1025px) {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+    }
+}
+
+/* Ocultar scrollbars en mobile */
+@media (max-width: 1024px) {
+    ::-webkit-scrollbar {
+        width: 0px;
+        height: 6px;
+    }
+}

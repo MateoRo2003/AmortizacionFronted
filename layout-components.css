@@ -1,0 +1,106 @@
+/* ============================================
+   LAYOUT Y COMPONENTES ESTRUCTURALES
+   ============================================ */
+
+/* Header Minimalista */
+.header {
+    background: var(--white);
+    padding: 20px 24px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header h1 {
+    color: var(--neutral-dark);
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.logo {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 20px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Layout principal del dashboard */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    max-height: calc(100vh - 140px);
+    overflow: hidden;
+}
+
+/* Paneles izquierdo y derecho */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    padding-right: 8px;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+}
+
+/* Responsive para tablets y móviles */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .left-panel {
+        overflow-y: visible;
+        max-height: none;
+        padding-right: 0;
+    }
+    
+    .right-panel {
+        max-height: none;
+    }
+}
+
+/* Scrollbar personalizado para panel izquierdo */
+.left-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}

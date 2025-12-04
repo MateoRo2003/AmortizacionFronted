@@ -1,0 +1,443 @@
+/* ============================================
+   FORMULARIOS, TABLAS Y CONTROLES
+   ============================================ */
+
+/* Filters Modernos */
+.filters {
+    background: var(--white);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.filters h3, .filters h4 {
+    font-size: clamp(13px, 2.5vw, 16px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.comparacion-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: min(100%, 140px);
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--neutral-dark);
+    font-size: clamp(12px, 2vw, 14px);
+    letter-spacing: -0.01em;
+}
+
+.filter-group input, .filter-group select {
+    padding: 12px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--border-radius-sm);
+    font-size: clamp(12px, 2vw, 14px);
+    transition: var(--transition);
+    width: 100%;
+    background: var(--white);
+    font-family: inherit;
+}
+
+.filter-group input:focus, .filter-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Buttons Modernos */
+.btn-calcular, .btn-comparar, .btn-limpiar, .btn-excel {
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: clamp(13px, 2.5vw, 15px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 8px;
+    white-space: nowrap;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-calcular:hover, .btn-comparar:hover, .btn-limpiar:hover, .btn-excel:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-calcular:active, .btn-comparar:active, .btn-limpiar:active, .btn-excel:active {
+    transform: translateY(0);
+}
+
+.btn-calcular {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+}
+
+.btn-comparar {
+    background: linear-gradient(135deg, var(--secondary) 0%, #05c391 100%);
+    color: var(--white);
+}
+
+.btn-limpiar {
+    background: linear-gradient(135deg, var(--neutral) 0%, #475569 100%);
+    color: var(--white);
+}
+
+.btn-excel {
+    background: linear-gradient(135deg, #217346 0%, #1e6e3e 100%);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* TABS CONTAINER - Moderno */
+.tabs-container {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    min-height: 460px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tabs-header {
+    display: flex;
+    background: var(--neutral-light);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--neutral);
+    transition: var(--transition);
+    font-size: clamp(13px, 2.5vw, 15px);
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    position: relative;
+}
+
+.tab-button.active {
+    background: var(--white);
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+}
+
+.tab-button:not(.active):hover {
+    color: var(--primary-dark);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.tab-content {
+    padding: 20px;
+    display: none;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Tablas Modernas */
+#tablaAmortizacion, 
+#tablaResumenComparativo {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#tablaAmortizacion table,
+#tablaResumenComparativo table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+    margin-top: 0;
+    font-size: clamp(12px, 1.8vw, 14px);
+    background: var(--white);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+#tablaAmortizacion th,
+#tablaResumenComparativo th {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    font-size: clamp(12px, 1.8vw, 14px);
+    z-index: 10;
+}
+
+#tablaAmortizacion td,
+#tablaResumenComparativo td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+    transition: var(--transition);
+}
+
+#tablaAmortizacion tr:hover,
+#tablaResumenComparativo tr:hover {
+    background: #f8fafc;
+}
+
+#tablaAmortizacion tr:nth-child(even),
+#tablaResumenComparativo tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+#tablaAmortizacion tr:nth-child(even):hover,
+#tablaResumenComparativo tr:nth-child(even):hover {
+    background: #f1f5f9;
+}
+
+/* Diferencia de colores para comparación */
+.diferencia-positiva {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.diferencia-negativa {
+    color: var(--error);
+    font-weight: 700;
+}
+
+/* Loading Moderno */
+.loading {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    color: var(--white);
+    font-size: clamp(13px, 3vw, 16px);
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+}
+
+.loading.active {
+    display: block;
+}
+
+/* Comparacion Banner */
+.comparacion-banner {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 16px;
+    text-align: center;
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comparacion-banner h3 {
+    margin: 0;
+    font-size: clamp(17px, 4vw, 22px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.comparacion-banner p {
+    font-size: clamp(12px, 2vw, 14px);
+    opacity: 0.9;
+    margin-top: 8px;
+}
+
+/* Selector de sistema de amortización */
+.sistema-selector {
+    display: inline-block;
+    margin-left: 12px;
+}
+
+.sistema-selector select {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: var(--white);
+    font-size: 12px;
+    color: var(--neutral-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.sistema-selector select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Responsive para formularios y tablas */
+@media (max-width: 768px) {
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .input-wrapper {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .btn-calcular, .btn-comparar, .btn-limpiar, .btn-excel {
+        width: 100%;
+        padding: 14px;
+        margin-top: 8px;
+    }
+    
+    .filters {
+        padding: 16px;
+    }
+    
+    #tablaAmortizacion table,
+    #tablaResumenComparativo table {
+        min-width: 500px;
+        font-size: 12px;
+    }
+    
+    #tablaAmortizacion th,
+    #tablaResumenComparativo th,
+    #tablaAmortizacion td,
+    #tablaResumenComparativo td {
+        padding: 10px 8px;
+    }
+    
+    .tab-content {
+        max-height: none;
+        overflow-y: visible;
+        padding: 16px;
+    }
+    
+    .sistema-selector {
+        margin-left: 8px;
+    }
+    
+    .sistema-selector select {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-button {
+        padding: 14px 12px;
+        font-size: 13px;
+    }
+    
+    .comparacion-banner {
+        padding: 16px;
+    }
+    
+    #tablaAmortizacion table,
+    #tablaResumenComparativo table {
+        min-width: 450px;
+        font-size: 11px;
+    }
+    
+    #tablaAmortizacion th,
+    #tablaResumenComparativo th,
+    #tablaAmortizacion td,
+    #tablaResumenComparativo td {
+        padding: 8px 6px;
+    }
+    
+    .sistema-selector {
+        display: block;
+        margin-left: 0;
+        margin-top: 6px;
+        width: 100%;
+    }
+    
+    .sistema-selector select {
+        width: 100%;
+        padding: 6px;
+    }
+    
+    .tabs-header .tab-button {
+        flex-direction: column;
+        padding: 12px;
+    }
+}
+
+/* Optimizaciones para dispositivos muy pequeños */
+@media (max-width: 360px) {
+    body {
+        padding: 12px;
+    }
+    
+    .header {
+        padding: 16px 20px;
+    }
+    
+    .kpi-card {
+        padding: 16px;
+        min-height: 100px;
+    }
+    
+    .chart-card {
+        min-height: 220px;
+        padding: 14px;
+    }
+    
+    .chart-card canvas {
+        height: 160px !important;
+        max-height: 160px;
+    }
+    
+    .tab-button {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+    
+    .tabs-container {
+        min-height: auto;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
