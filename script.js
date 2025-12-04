@@ -780,7 +780,7 @@ function actualizarGraficosComparacion() {
     });
 }
 
-// CORREGIDO: Actualizar tabla resumen con análisis correcto
+
 function actualizarTablaResumen() {
     const tabla1 = datoPrincipal.data.Tabla;
     const tabla2 = datoComparacion.data.Tabla;
@@ -1176,9 +1176,3 @@ function crearHojaResumen(wb, sistemaLabel, totalPagar, totalInteres, totalAmort
 
     XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Ejecutivo');
 }
-// Calcular automáticamente al cargar
-// window.addEventListener('load', () => {
-//     document.getElementById('monto').value = 150000;
-//     document.getElementById('cuotas').value = 12;
-//     calcularYActualizar();
-// });

@@ -142,6 +142,33 @@
 
         <!-- Panel derecho: Gráficos y detalles -->
         <div class="right-panel">
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-button active" onclick="openTab('tab-amortizacion')">
+                        Tabla de Amortización
+                        <div class="sistema-selector">
+                            <select id="sistemaAmortizacion" onchange="cambiarSistemaAmortizacion()">
+                                <option value="frances">Sistema Francés</option>
+                                <option value="aleman">Sistema Alemán</option>
+                            </select>
+                        </div>
+                    </button>
+                    <button class="tab-button" onclick="openTab('tab-comparacion')">Comparación Detallada</button>
+                </div>
+                <div class="tab-content active" id="tab-amortizacion">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0;">Tabla de Amortización</h4>
+                        <button class="btn-excel" onclick="exportarAExcel()" title="Exportar a Excel">
+                            <i class="fa-solid fa-file-excel"></i> Exportar a Excel
+                        </button>
+                    </div>
+                    <div id="tablaAmortizacion"></div>
+                </div>
+                <div class="tab-content" id="tab-comparacion">
+                    <div id="tablaResumenComparativo"></div>
+                </div>
+            </div>
             <div class="chart-container">
                 <div class="chart-card">
                     <h3>
@@ -200,33 +227,7 @@
 
             <!-- Tabs para contenido adicional -->
             <!-- Tabs para contenido adicional -->
-            <div class="tabs-container">
-                <div class="tabs-header">
-                    <button class="tab-button active" onclick="openTab('tab-amortizacion')">
-                        Tabla de Amortización
-                        <div class="sistema-selector">
-                            <select id="sistemaAmortizacion" onchange="cambiarSistemaAmortizacion()">
-                                <option value="frances">Sistema Francés</option>
-                                <option value="aleman">Sistema Alemán</option>
-                            </select>
-                        </div>
-                    </button>
-                    <button class="tab-button" onclick="openTab('tab-comparacion')">Comparación Detallada</button>
-                </div>
-                <div class="tab-content active" id="tab-amortizacion">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4 style="margin: 0;">Tabla de Amortización</h4>
-                        <button class="btn-excel" onclick="exportarAExcel()" title="Exportar a Excel">
-                            <i class="fa-solid fa-file-excel"></i> Exportar a Excel
-                        </button>
-                    </div>
-                    <div id="tablaAmortizacion"></div>
-                </div>
-                <div class="tab-content" id="tab-comparacion">
-                    <div id="tablaResumenComparativo"></div>
-                </div>
-            </div>
+
         </div>
     </div>
 
