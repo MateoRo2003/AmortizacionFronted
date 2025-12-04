@@ -611,7 +611,7 @@ body {
     padding: 20px;
     display: none;
     max-height: 420px;
-    /* overflow-y: auto; */
+    overflow-y: auto;
 }
 
 @media (max-width: 1024px) {
