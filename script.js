@@ -87,7 +87,7 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
     };
 
     try {
-        const res = await fetch("https://amortizacionbackend-production.up.railway.app/api/calcular", {
+        const res = await fetch("https://amortizacionbackend-production.up.railway.app//api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -110,7 +110,7 @@ function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
     //tasa efectiva mensual sirve para calcular el interes mes a mes
     const tem = tna / 12;
 
-   //tasa efectiva anual sirve el interes ral anaul cuand
+   
     const tea = datosBackend.TEA !== null && datosBackend.TEA !== undefined
         ? datosBackend.TEA
         : ((1 + tna / 100 / 12) ** 12 - 1) * 100;
@@ -285,7 +285,7 @@ async function compararBancos() {
         // Retraso de 2 segundos
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const res = await fetch("https://amortizacionbackend-production.up.railway.app/api/calcular", {
+        const res = await fetch("https://amortizacionbackend-production.up.railway.app//api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
