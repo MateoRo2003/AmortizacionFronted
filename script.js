@@ -108,7 +108,6 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
 function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
     const tem = tna / 12;
 
-    // Validar y calcular TEA
     let tea;
     if (datosBackend.TEA !== null &&
         datosBackend.TEA !== undefined &&
@@ -122,7 +121,7 @@ function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
     const cft = totalPagar - monto;
     const cftna = (cft / monto) * (12 / cuotas) * 100;
 
-    // Validar CFTEA de forma robusta
+
     let cftea;
     let cfteaCalculada = true;
 
@@ -131,9 +130,9 @@ function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
         datosBackend.CFTEA !== '' &&
         !isNaN(parseFloat(datosBackend.CFTEA))) {
         cftea = parseFloat(datosBackend.CFTEA);
-        cfteaCalculada = false; // Viene del backend
+        cfteaCalculada = false; 
     } else {
-        cftea = null; // No disponible
+        cftea = null; 
     }
 
     return {
