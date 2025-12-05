@@ -106,23 +106,23 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
 
 
 function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
-
-    // Tasa efectiva mensual (aprox. TNA/12 — no es exacta, pero vos la querés así)
+ 
+    //tasa efectiva mensual sirve para calcular el interes mes a mes
     const tem = tna / 12;
 
-    // TEA: usa backend si viene, si no la calcula
-    const tea = (datosBackend.TEA !== null && datosBackend.TEA !== undefined)
+   //tasa efectiva anual sirve el interes ral anaul cuand
+    const tea = datosBackend.TEA !== null && datosBackend.TEA !== undefined
         ? datosBackend.TEA
         : ((1 + tna / 100 / 12) ** 12 - 1) * 100;
 
-    // Costo financiero total en pesos
+   
     const cft = totalPagar - monto;
 
-    // CFTNA: cálculo interno opcional
+  
     const cftna = (cft / monto) * (12 / cuotas) * 100;
 
-    // CFTEA: si el banco lo trae, se usa; si no, "N/A"
-    const cftea = (datosBackend.CFTEA !== null && datosBackend.CFTEA !== undefined)
+   
+    const cftea = datosBackend.CFTEA !== null && datosBackend.CFTEA !== undefined
         ? datosBackend.CFTEA
         : null;
 
@@ -131,11 +131,9 @@ function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
         tea: tea.toFixed(2),
         cft: cft.toFixed(2),
         cftna: cftna.toFixed(2),
-        cftea: (cftea !== null) ? cftea.toFixed(2) : 'N/A',
-
-        // Flags para mostrar * si fueron calculadas por el sistema
-        teaCalculada: !(datosBackend.TEA !== null && datosBackend.TEA !== undefined),
-        cfteaCalculada: !(datosBackend.CFTEA !== null && datosBackend.CFTEA !== undefined)
+        cftea: cftea ? cftea.toFixed(2) : 'N/A',
+        teaCalculada: datosBackend.TEA === null || datosBackend.TEA === undefined,
+        cfteaCalculada: datosBackend.CFTEA === null || datosBackend.CFTEA === undefined
     };
 }
 
@@ -342,7 +340,6 @@ function actualizarDashboard(data, banco) {
     const totalPagar = tabla.reduce((sum, row) => sum + row.Cuota_total, 0);
     const interesTotal = tabla.reduce((sum, row) => sum + row.Interes, 0);
     const cuotaMensual = tabla[0].Cuota_total;
-
     const monto = datoPrincipal.monto;
     const cuotas = datoPrincipal.cuotas;
 
@@ -351,51 +348,50 @@ function actualizarDashboard(data, banco) {
     document.getElementById("cuotaMensual").textContent = formatearPesos(cuotaMensual);
     document.getElementById("tnaAplicada").textContent = data.TNA + "%";
 
-    // Si no hay comparación, limpiamos textos auxiliares
     if (!datoComparacion) {
         document.querySelectorAll('.kpi-subtitle').forEach(el => {
             el.textContent = '';
+            el.className = 'kpi-subtitle';
         });
+        
         document.querySelectorAll('.metrica-comp').forEach(el => {
             el.textContent = '';
+            el.className = 'metrica-comp';
         });
     }
 
-    // Datos que vienen del scraper/back-end
     const datosBackend = {
-        TEA: data.TEA ?? null,
-        CFTEA: data.CFTEA ?? null
+        TEA: data.TEA || null,
+        CFTEA: data.CFTEA || null
     };
 
     const metricas = calcularMetricas(data.TNA, monto, cuotas, totalPagar, datosBackend);
 
-    // Mostrar métricas
     document.getElementById("tem").textContent = metricas.tem + "%";
-
-    document.getElementById("tea").innerHTML =
-        metricas.tea + "%" + (metricas.teaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '');
-
+    document.getElementById("tea").innerHTML = metricas.tea + "%" +
+        (metricas.teaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '');
     document.getElementById("cft").textContent = formatearPesos(metricas.cft);
     document.getElementById("cftna").textContent = metricas.cftna + "%";
 
-    // CFTEA (si existe)
     const cfteaElement = document.getElementById("cftea");
     if (cfteaElement) {
-        cfteaElement.innerHTML =
-            (metricas.cftea !== 'N/A')
-                ? metricas.cftea + "%" + (metricas.cfteaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '')
-                : 'N/A';
+        cfteaElement.innerHTML = metricas.cftea !== 'N/A'
+            ? metricas.cftea + "%" + (metricas.cfteaCalculada ? ' <span style="font-size: 10px; opacity: 0.7;">*</span>' : '')
+            : 'N/A';
     }
 
-    // Estilos para modo comparación
-    document.querySelectorAll('.metrica-item').forEach(item => {
-        item.classList.toggle('con-comparacion', !!datoComparacion);
+    const metricasItems = document.querySelectorAll('.metrica-item');
+    metricasItems.forEach(item => {
+        if (datoComparacion) {
+            item.classList.add('con-comparacion');
+        } else {
+            item.classList.remove('con-comparacion');
+        }
     });
 
     actualizarGraficos(tabla);
     actualizarTabla(tabla);
 }
-
 function mostrarComparacion() {
     if (!datoPrincipal || !datoComparacion) return;
 
