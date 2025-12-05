@@ -104,10 +104,10 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
     }
 }
 
-// CORREGIDO: Cálculo de métricas financieras 
+
 function calcularMetricas(tna, monto, cuotas, totalPagar, datosBackend = {}) {
  
-    //tasa efectiva mensual sirve para calcular el interes mes a mes
+   
     const tem = tna / 12;
 
    
