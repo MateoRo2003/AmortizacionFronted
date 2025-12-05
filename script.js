@@ -42,7 +42,7 @@ async function recalcularConSistema(sistema) {
 
     try {
         // Retraso de 2 segundos
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         const res = await fetch("https://amortizacionbackend-production.up.railway.app/api/calcular", {
             method: "POST",
