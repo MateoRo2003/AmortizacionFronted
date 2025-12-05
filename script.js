@@ -87,7 +87,7 @@ async function actualizarComparacionConSistema(sistemaPrincipal) {
     };
 
     try {
-        const res = await fetch("https://amortizacionbackend-production.up.railway.app//api/calcular", {
+        const res = await fetch("https://amortizacionbackend-production.up.railway.app/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -285,7 +285,7 @@ async function compararBancos() {
         // Retraso de 2 segundos
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const res = await fetch("https://amortizacionbackend-production.up.railway.app//api/calcular", {
+        const res = await fetch("https://amortizacionbackend-production.up.railway.app/api/calcular", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
