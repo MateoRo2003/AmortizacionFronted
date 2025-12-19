@@ -438,15 +438,15 @@ function mostrarComparacion() {
     const difTNA = datoComparacion.data.TNA - datoPrincipal.data.TNA;
 
     // Actualizar KPIs
-    // actualizarKPIComparacion(
-    //     "totalPagarComp",
-    //     "Total a Pagar",
-    //     datoPrincipal.banco,
-    //     datoComparacion.banco,
-    //     formatearPesos(total1),
-    //     formatearPesos(total2),
-    //     difTotal
-    // );
+    actualizarKPIComparacion(
+        "totalPagarComp",
+        "Total a Pagar",
+        datoPrincipal.banco,
+        datoComparacion.banco,
+        formatearPesos(total1),
+        formatearPesos(total2),
+        difTotal
+    );
 
     // ... resto de actualizaciones de KPIs ...
 
