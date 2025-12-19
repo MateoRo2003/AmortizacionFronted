@@ -439,7 +439,7 @@ function mostrarComparacion() {
 
     // Actualizar KPIs
     actualizarKPIComparacion(
-        "totalPagarComp",
+        // "totalPagarComp",
         "Total a Pagar",
         datoPrincipal.banco,
         datoComparacion.banco,
