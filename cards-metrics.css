@@ -1,5 +1,5 @@
 /* ============================================
-   CARDS, KPIs Y MÉTRICAS - MEJORADO Y RESPONSIVE
+   CARDS, KPIs Y MÉTRICAS - MEJORADO
    ============================================ */
 
 /* KPI Cards Modernas */
@@ -7,7 +7,6 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    margin-bottom: 16px;
 }
 
 .kpi-card {
@@ -22,8 +21,6 @@
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     animation: fadeIn 0.5s ease-out;
-    display: flex;
-    flex-direction: column;
 }
 
 .kpi-card:hover {
@@ -63,8 +60,6 @@
     margin-bottom: 8px;
     font-weight: 600;
     letter-spacing: -0.01em;
-    line-height: 1.2;
-    z-index: 1;
 }
 
 .kpi-value {
@@ -74,8 +69,6 @@
     word-break: break-word;
     letter-spacing: -0.02em;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-    line-height: 1.1;
 }
 
 /* KPI Subtitle mejorado para comparaciones */
@@ -84,7 +77,7 @@
     font-weight: 600;
     padding: 6px 10px;
     border-radius: 8px;
-    margin-top: auto;
+    margin-top: 8px;
     display: inline-block;
     max-width: 100%;
     min-height: 20px;
@@ -93,9 +86,83 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     word-break: break-word;
-    overflow-wrap: break-word;
     overflow: hidden;
-    z-index: 1;
+}
+
+/* Contenedor de comparación en KPIs */
+.comparacion-kpi-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.banco-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.banco-info.principal {
+    background: rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+    border-left: 3px solid #3b82f6;
+}
+
+.banco-info.comparacion {
+    background: rgba(16, 185, 129, 0.2);
+    color: #ffffff;
+    border-left: 3px solid #10b981;
+}
+
+.banco-nombre {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.banco-nombre::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.banco-info.principal .banco-nombre::before {
+    background: #3b82f6;
+}
+
+.banco-info.comparacion .banco-nombre::before {
+    background: #10b981;
+}
+
+.banco-valor {
+    font-weight: 700;
+}
+
+.diferencia-kpi {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.diferencia-positiva {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.diferencia-negativa {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
 }
 
 .kpi-icon {
@@ -104,35 +171,30 @@
     right: 16px;
     font-size: clamp(24px, 5vw, 32px);
     opacity: 0.2;
-    z-index: 0;
 }
 
-/* Métricas Adicionales - RESPONSIVE COMPLETO */
+/* Métricas Adicionales - MEJORADO */
 .metricas-adicionales {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    padding: clamp(16px, 3vw, 20px);
+    padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
     border: 2px solid #e2e8f0;
+    max-height: 900px;
     animation: fadeIn 0.5s ease-out;
-    width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
 }
 
 .metricas-adicionales h3 {
     font-size: clamp(15px, 3vw, 18px);
     color: var(--neutral-dark);
-    margin-bottom: clamp(16px, 4vw, 20px);
+    margin-bottom: 20px;
     text-align: center;
     font-weight: 700;
     letter-spacing: -0.01em;
     padding-bottom: 12px;
     border-bottom: 2px solid #f1f5f9;
     position: relative;
-    line-height: 1.2;
-    word-break: break-word;
 }
 
 .metricas-adicionales h3::after {
@@ -141,7 +203,7 @@
     bottom: -2px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(60px, 40%);
+    width: 60px;
     height: 2px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
 }
@@ -149,13 +211,12 @@
 .metricas-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(12px, 3vw, 16px);
-    width: 100%;
+    gap: 16px;
 }
 
 .metrica-item {
     background: var(--white);
-    padding: clamp(14px, 3vw, 16px);
+    padding: 16px;
     border-radius: var(--border-radius-sm);
     text-align: center;
     transition: var(--transition);
@@ -167,15 +228,18 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    word-break: break-word;
 }
 
 .metrica-item:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
     border-color: #cbd5e1;
+}
+
+/* Efecto de borde para métricas con comparación */
+.metrica-item.con-comparacion {
+    border-top: 3px solid #3b82f6;
+    border-bottom: 3px solid #10b981;
 }
 
 .metrica-label {
@@ -185,9 +249,6 @@
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: -0.01em;
-    text-align: center;
-    width: 100%;
-    overflow-wrap: break-word;
 }
 
 .metrica-value {
@@ -197,29 +258,22 @@
     margin: 8px 0;
     letter-spacing: -0.01em;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    line-height: 1.1;
-    width: 100%;
-    overflow-wrap: break-word;
 }
 
-/* Métricas de comparación - RESPONSIVE */
+/* Métricas de comparación - MEJORADO */
 .metrica-comp {
-    font-size: clamp(10px, 1.8vw, 13px);
+    font-size: clamp(11px, 2vw, 13px);
     font-weight: 600;
-    padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
+    padding: 8px 10px;
     border-radius: 8px;
-    margin-top: auto;
+    margin-top: 10px;
     background: #f8fafc;
     border-left: 4px solid transparent;
     min-height: 28px;
     line-height: 1.4;
     text-align: left;
     word-break: break-word;
-    overflow-wrap: break-word;
-    width: 100%;
-    box-sizing: border-box;
-    max-height: 80px;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 /* Estilos específicos para valores de comparación */
@@ -241,26 +295,114 @@
     background: linear-gradient(90deg, rgba(156, 163, 175, 0.1) 0%, rgba(156, 163, 175, 0.05) 100%);
 }
 
-/* Chart Container Responsive */
+/* Contenedor de comparación detallada */
+.comparacion-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.comparacion-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.comparacion-fila.banco-principal {
+    background: rgba(59, 130, 246, 0.08);
+    color: #1d4ed8;
+    border-left: 3px solid #3b82f6;
+}
+
+.comparacion-fila.banco-comparacion {
+    background: rgba(16, 185, 129, 0.08);
+    color: #047857;
+    border-left: 3px solid #10b981;
+}
+
+.comparacion-fila .nombre {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.comparacion-fila .nombre::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.comparacion-fila.banco-principal .nombre::before {
+    background: #3b82f6;
+}
+
+.comparacion-fila.banco-comparacion .nombre::before {
+    background: #10b981;
+}
+
+.comparacion-fila .valor {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* Badges de identificación */
+.badge-banco {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.badge-principal {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: 2px solid #3b82f6;
+}
+
+.badge-comparacion {
+    background: linear-gradient(135deg, #10b981, #047857);
+    color: white;
+    border: 2px solid #10b981;
+}
+
+/* Separador visual */
+.separador-comparacion {
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    margin: 12px 0;
+    border-radius: 1px;
+    opacity: 0.5;
+}
+
+/* Charts Container */
 .chart-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(12px, 3vw, 16px);
-    margin-top: 16px;
+    gap: 16px;
 }
 
 .chart-card {
     background: var(--white);
-    padding: clamp(16px, 3vw, 20px);
+    padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-sm);
-    min-height: min(280px, 40vh);
+    min-height: 280px;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: var(--transition);
     animation: fadeIn 0.5s ease-out;
-    display: flex;
-    flex-direction: column;
 }
 
 .chart-card:hover {
@@ -269,7 +411,7 @@
 
 .chart-card h3 {
     color: var(--neutral-dark);
-    margin-bottom: clamp(12px, 3vw, 16px);
+    margin-bottom: 16px;
     font-size: clamp(13px, 2.5vw, 16px);
     display: flex;
     align-items: center;
@@ -277,19 +419,18 @@
     flex-wrap: wrap;
     font-weight: 700;
     letter-spacing: -0.01em;
-    line-height: 1.2;
 }
 
 .chart-icon {
-    width: clamp(24px, 5vw, 28px);
-    height: clamp(24px, 5vw, 28px);
+    width: 28px;
+    height: 28px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--white);
-    font-size: clamp(11px, 2.5vw, 13px);
+    font-size: 13px;
     flex-shrink: 0;
     box-shadow: var(--shadow-sm);
 }
@@ -297,83 +438,44 @@
 /* Contenedores de gráficos */
 .chart-card canvas {
     width: 100% !important;
-    height: clamp(180px, 30vh, 220px) !important;
+    height: 220px !important;
     max-height: 220px;
-    flex-grow: 1;
 }
 
-/* ============================================
-   MEDIA QUERIES ESPECÍFICAS PARA RESPONSIVE
-   ============================================ */
-
-/* Tablets y pantallas medianas */
-@media (max-width: 1024px) {
-    .metricas-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-    }
-    
-    .kpi-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .chart-container {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-}
-
-/* Tablets pequeñas y móviles grandes */
+/* Responsive para cards y métricas */
 @media (max-width: 768px) {
-    .metricas-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    .kpi-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
     .chart-container {
         grid-template-columns: 1fr;
         gap: 12px;
     }
     
     .chart-card canvas {
-        height: clamp(160px, 25vh, 200px) !important;
+        height: 200px !important;
         max-height: 200px;
     }
     
-    .kpi-card {
-        padding: 16px;
-        min-height: 100px;
-    }
-    
-    .metrica-item {
-        min-height: 95px;
-        padding: 12px;
+    .metricas-grid {
+        gap: 12px;
     }
 }
 
-/* Móviles pequeños */
-@media (max-width: 576px) {
+@media (max-width: 480px) {
+    .kpi-container {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
     .metricas-grid {
         grid-template-columns: 1fr;
         gap: 10px;
     }
     
-    .kpi-container {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    .chart-container {
-        gap: 10px;
+    .metricas-adicionales {
+        min-height: 1200px;
     }
     
     .chart-card {
-        padding: 14px;
+        padding: 16px;
         min-height: 240px;
     }
     
@@ -382,160 +484,14 @@
         max-height: 180px;
     }
     
-    .kpi-card {
+    .metrica-item {
+        min-height: 95px;
         padding: 14px;
-        min-height: 90px;
-    }
-    
-    .kpi-value {
-        font-size: clamp(16px, 5vw, 20px);
-    }
-    
-    .kpi-subtitle {
-        font-size: clamp(10px, 3vw, 12px);
-        padding: 4px 8px;
-    }
-    
-    .metrica-item {
-        min-height: 85px;
-        padding: 10px;
-    }
-    
-    .metrica-label {
-        font-size: clamp(10px, 3vw, 12px);
-        margin-bottom: 6px;
-    }
-    
-    .metrica-value {
-        font-size: clamp(14px, 4vw, 18px);
-        margin: 6px 0;
     }
     
     .metrica-comp {
-        font-size: clamp(9px, 2.5vw, 11px);
-        padding: 5px 7px;
-        min-height: 24px;
-    }
-    
-    .metricas-adicionales {
-        padding: 12px;
-    }
-    
-    .metricas-adicionales h3 {
-        font-size: clamp(13px, 4vw, 16px);
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-    }
-}
-
-/* Móviles muy pequeños */
-@media (max-width: 375px) {
-    .metricas-grid {
-        gap: 8px;
-    }
-    
-    .kpi-container {
-        gap: 6px;
-    }
-    
-    .kpi-card {
-        padding: 12px;
-        min-height: 85px;
-    }
-    
-    .kpi-label {
-        font-size: clamp(10px, 3vw, 12px);
-    }
-    
-    .kpi-value {
-        font-size: clamp(14px, 5vw, 18px);
-    }
-    
-    .kpi-subtitle {
-        font-size: 10px;
-        padding: 3px 6px;
-    }
-    
-    .metrica-item {
-        min-height: 80px;
-        padding: 8px;
-    }
-    
-    .metrica-label {
-        font-size: 10px;
-        margin-bottom: 4px;
-    }
-    
-    .metrica-value {
-        font-size: clamp(13px, 4vw, 16px);
-        margin: 4px 0;
-    }
-    
-    .metrica-comp {
-        font-size: 9px;
-        padding: 4px 6px;
-        min-height: 22px;
-    }
-    
-    .chart-card {
-        padding: 12px;
-        min-height: 220px;
-    }
-    
-    .chart-card canvas {
-        height: 160px !important;
-        max-height: 160px;
-    }
-}
-
-/* Pantallas muy grandes */
-@media (min-width: 1600px) {
-    .metricas-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-    
-    .kpi-container {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    }
-    
-    .chart-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-    
-    .chart-card {
-        min-height: 320px;
-    }
-    
-    .chart-card canvas {
-        height: 250px !important;
-        max-height: 250px;
-    }
-}
-
-/* Ajustes para orientación landscape en móviles */
-@media (max-height: 600px) and (orientation: landscape) {
-    .metricas-adicionales {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    .metricas-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .kpi-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .kpi-card {
-        min-height: 80px;
-    }
-    
-    .metrica-item {
-        min-height: 70px;
+        padding: 6px 8px;
+        font-size: 11px;
     }
 }
 
@@ -559,46 +515,22 @@
     animation: highlightComparison 1.5s ease-in-out;
 }
 
-/* Asegurar que el contenedor padre también sea responsive */
-.dashboard-container {
-    display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 16px;
-    padding: 16px;
+/* Tooltip para diferencias */
+.tooltip-diferencia {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
 }
 
-@media (max-width: 1200px) {
-    .dashboard-container {
-        grid-template-columns: 300px 1fr;
-    }
+.tooltip-positivo {
+    background: #dcfce7;
+    color: #059669;
 }
 
-@media (max-width: 992px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .left-panel, .right-panel {
-        width: 100%;
-    }
-}
-
-/* Scroll suave para métricas largas en móviles */
-.metricas-adicionales {
-    -webkit-overflow-scrolling: touch;
-}
-
-.metrica-comp::-webkit-scrollbar {
-    width: 4px;
-}
-
-.metrica-comp::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 2px;
-}
-
-.metrica-comp::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 2px;
+.tooltip-negativo {
+    background: #fee2e2;
+    color: #dc2626;
 }
