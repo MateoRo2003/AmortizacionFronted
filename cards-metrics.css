@@ -471,7 +471,7 @@
     }
     
     .metricas-adicionales {
-        min-height: auto;
+        min-height: 1200px;
     }
     
     .chart-card {

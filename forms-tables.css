@@ -397,9 +397,7 @@
 
 /* Optimizaciones para dispositivos muy pequeños */
 @media (max-width: 360px) {
-    body {
-        padding: 12px;
-    }
+
     
     .header {
         padding: 16px 20px;
